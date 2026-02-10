@@ -497,6 +497,156 @@ double	Model::classTestError(char *filename,double &precision,double &recall)
 	return (sum)/count;
 }
 
+
+void	Model::printConfusionMatrix(
+                                 vector<double> &dclass,
+                                 vector<double> &T,vector<double> &O,
+                                 vector<double> &precision,
+                                 vector<double> &recall)
+{
+    int i,j;
+    int N=T.size();
+    int nclass=dclass.size();
+    precision.resize(nclass);
+    recall.resize(nclass);
+    int **CM;
+    //printf("** CONFUSION MATRIX ** Number of classes: %d\n",nclass);
+    CM=new int*[nclass];
+    for(i=0;i<nclass;i++) CM[i]=new int[nclass];
+    for(i=0;i<nclass;i++)
+        for(j=0;j<nclass;j++) CM[i][j] = 0;
+
+    for(i=0;i<N;i++) CM[(int)T[i]][(int)O[i]]++;
+    for(i=0;i<nclass;i++)
+    {
+        double sum = 0.0;
+        for(j=0;j<nclass;j++)
+            sum+=CM[j][i];
+        precision[i]=sum==0?-1:CM[i][i]/sum;
+        sum = 0.0;
+        for(j=0;j<nclass;j++)
+            sum+=CM[i][j];
+        recall[i]=sum==0?-1:CM[i][i]/sum;
+    }
+    for(i=0;i<nclass;i++)
+    {
+        for(j=0;j<nclass;j++)
+        {
+            //printf("%4d ",CM[i][j]);
+        }
+        //printf("\n");
+        delete[] CM[i];
+    }
+    delete[] CM;
+}
+
+
+static int nearestClassIndex(vector<double> &dclass,double value)
+{
+    int pos=-1;
+    double dmin=1e+100;
+    for(int i=0;i<dclass.size();i++)
+    {
+        double d = fabs(dclass[i]-value);
+        if(d<dmin)
+        {
+            dmin = d;
+            pos = i;
+        }
+    }
+    return pos;
+}
+void    Model::getPrecisionRecall(
+                               const char *filename,
+                               double &avg_precision,
+                               double &avg_recall,
+                               double &avg_fscore)
+{
+    int count;
+    int dim;
+    FILE *Fp=fopen(filename,"r");
+     fscanf(Fp,"%d",&dim);
+    fscanf(Fp,"%d",&count);
+    vector<double> dclass;
+    vector<vector<double>> testx;
+    vector<double>  testy;
+    testx.resize(count);
+    testy.resize(count);
+    for(int i=0;i<count;i++)
+    {
+        testx[i].resize(dim);
+        for(int j=0;j<dim;j++)
+            fscanf(Fp,"%lf",&testx[i][j]);
+        fscanf(Fp,"%lf",&testy[i]);
+        int found =-1;
+        for(int j=0;j<dclass.size();j++)
+        {
+            if(fabs(dclass[j]-testy[i])<1e-5)
+            {
+                found=j;
+                break;
+            }
+        }
+        if(found==-1)
+        {
+            dclass.push_back(testy[i]);
+        }
+    }
+    fclose(Fp);
+
+    for(int i=0;i<dclass.size();i++)
+    {
+        for(int j=0;j<dclass.size()-1;j++)
+        {
+            if(dclass[j+1]<dclass[j])
+            {
+                double t = dclass[j];
+                dclass[j]=dclass[j+1];
+                dclass[j+1]=t;
+            }
+        }
+    }
+
+
+    vector<double> T;
+    vector<double> O;
+    T.resize(count);
+    O.resize(count);
+
+    vector<double> xx;
+    xx.resize(pattern_dimension);
+
+    for(unsigned int i=0;i<count;i++)
+    {
+        mapper->map(testx[i],xx);
+        double tempOut = output(xx);
+        T[i]=nearestClassIndex(dclass,testy[i]);
+        O[i]=nearestClassIndex(dclass,tempOut);
+    }
+    vector<double> precision;
+    vector<double> recall;
+    vector<double> fscore;
+    fscore.resize(dclass.size());
+    avg_precision = 0.0, avg_recall = 0.0,avg_fscore=0.0;
+    printConfusionMatrix(dclass,T,O,precision,recall);
+    int icount1=dclass.size();
+    int icount2=dclass.size();
+    for(int i=0;i<dclass.size();i++)
+    {
+        if(precision[i]>=0)
+            avg_precision+=precision[i];
+        else icount1--;
+        if(recall[i]>=0)
+            avg_recall+=recall[i];
+        else icount2--;
+        fscore[i]=2.0*precision[i]*recall[i]/(precision[i]+recall[i]);
+        avg_fscore+=fscore[i];
+    }
+    avg_precision/=icount1;
+    avg_recall/=icount2;
+    avg_fscore=2.0 * avg_precision * avg_recall/(avg_precision+avg_recall);
+}
+
 void	Model::enableValidation()
 {
 	isvalidation=1;

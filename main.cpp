@@ -177,7 +177,10 @@ void red () {
     printf("\033[0m");
   }
 
-void runNeural(int iter,double &testError,double &classError)
+void runNeural(int iter,double &testError,double &classError,
+                 double &avg_precision,
+                 double &avg_recall,
+                 double &avg_fscore)
 {
     char train_file[1024];
     char test_file[1024];
@@ -195,23 +198,40 @@ void runNeural(int iter,double &testError,double &classError)
     neural->setPatternDimension(pattern_dimension);
     classError = 0.0;
     testError = 0.0;
+    avg_precision = 0.0;
+    avg_recall = 0.0;
+    avg_fscore = 0.0;
     for(int i=1;i<=total_runs;i++)
     {
     double d=neural->train2();
     testError+=neural->testError(test_file);
-    double precision,recall;
+    double precision,recall,fscore;
     classError+=neural->classTestError(test_file,precision,recall);
+    neural->getPrecisionRecall(test_file,precision,recall,fscore);
+    avg_precision+=precision;
+    avg_recall+=recall;
+    avg_fscore+=fscore;
     }
     testError/=total_runs;
     classError/=total_runs;
+    avg_precision/=total_runs;
+    avg_recall/=total_runs;
+    avg_fscore/=total_runs;
     //make red report
     red();
-    printf("NEURAL REPORT. TEST ERROR: %10.5lg CLASS ERROR: %10.5lg%%\n",testError,classError*100.0);
+    printf("NEURAL. TEST ERROR: %10.5lg CLASS ERROR: %10.5lg%%\n",testError,classError*100.0);
+    printf("NEURAL. PRECISION %10.5lg RECALL %10.5lg FSCORE %10.5lg\n",
+           avg_precision,avg_recall,avg_fscore);
     reset();
     delete neural;
 }
 
-void runRbf(int iter,double &testError,double &classError)
+void runRbf(int iter,
+            double &testError,
+            double &classError,
+            double &avg_precision,
+            double &avg_recall,
+            double &avg_fscore)
 {
     srand(iter);
     srand48(iter);
@@ -229,18 +249,30 @@ void runRbf(int iter,double &testError,double &classError)
     neural->setPatternDimension(pattern_dimension);
     testError = 0.0;
     classError  =0.0;
+    avg_precision = 0.0;
+    avg_recall = 0.0;
+    avg_fscore = 0.0;
     for(int i=1;i<=total_runs;i++)
     {
     double d=neural->train2();
     testError+=neural->testError(test_file);
-    double precision,recall;
+    double precision,recall,fscore;
     classError+=neural->classTestError(test_file,precision,recall);
+    neural->getPrecisionRecall(test_file,precision,recall,fscore);
+    avg_precision+=precision;
+    avg_recall+=recall;
+    avg_fscore+=fscore;
     }
     testError/=total_runs;
     classError/=total_runs;
+    avg_precision/=total_runs;
+    avg_recall/=total_runs;
+    avg_fscore/=total_runs;
     //make red report
     red();
-    printf("RBF REPORT. TEST ERROR: %10.5lg CLASS ERROR: %10.5lg%%\n",testError,classError*100.0);
+    printf("RBF.    TEST ERROR: %10.5lg CLASS ERROR: %10.5lg%%\n",testError,classError*100.0);
+    printf("RBF.    PRECISION %10.5lg RECALL %10.5lg FSCORE %10.5lg\n",
+           avg_precision,avg_recall,avg_fscore);
     reset();
     delete neural;
 }
@@ -248,6 +280,12 @@ void runRbf(int iter,double &testError,double &classError)
 double total_neural_test_error = 0.0,total_neural_class_error=0.0,
     total_rbf_test_error=0.0,total_rbf_class_error=0.0;
 
+double total_neural_precision=0.0,total_neural_recall=0.0,
+    total_neural_fscore=0.0;
+
+
+double total_rbf_precision=0.0,total_rbf_recall=0.0,
+    total_rbf_fscore=0.0;
 
 void run()
 {
@@ -296,12 +334,24 @@ void run()
         }
 
         double e1,c1,e2,c2;
-        runNeural(random_seed,e1,c1);
-        runRbf(random_seed,e2,c2);
+        double pp1,r1,f1;
+        double pp2,r2,f2;
+        runNeural(random_seed,e1,c1,pp1,r1,f1);
+        runRbf(random_seed,e2,c2,pp2,r2,f2);
         total_neural_test_error+=e1;
         total_neural_class_error+=c1;
+
+        total_neural_precision+=pp1;
+        total_neural_recall+=r1;
+        total_neural_fscore+=f1;
+
         total_rbf_test_error+=e2;
         total_rbf_class_error+=c2;
+
+        total_rbf_precision+=pp2;
+        total_rbf_recall+=r2;
+        total_rbf_fscore+=f2;
+
         if(fabs(pop->getBestFitness())<=best_fitness)
         {
             best_fitness = fabs(pop->getBestFitness());
@@ -315,13 +365,29 @@ void run()
     }
     //report
 
+    total_neural_precision/=total_runs;
+    total_neural_recall/=total_runs;
+    total_neural_fscore/=total_runs;
+
+
+    total_rbf_precision/=total_runs;
+    total_rbf_recall/=total_runs;
+    total_rbf_fscore/=total_runs;
 
     green();
     printf("BEST FITNESS = %20.8lg\n",best_fitness);
-    printf("NEURAL AVERAGES.. \tTEST: %10.5lg CLASS: %10.5lg%%\n",total_neural_test_error/total_runs,
-                total_neural_class_error*100.0/total_runs);
-    printf("RBF AVERAGES..    \tTEST: %10.5lg CLASS: %10.5lg%%\n",total_rbf_test_error/total_runs,
-               total_rbf_class_error*100.0/total_runs);
+    printf("NEURAL AVERAGES.. \tTEST: %10.5lg CLASS: %10.5lg%%\n",
+          total_neural_test_error/total_runs,
+          total_neural_class_error*100.0/total_runs);
+    printf("PRECISION %10.5lg RECALL %10.5lg FSCORE %10.5lg \n",
+           total_neural_precision,total_neural_recall,total_neural_fscore);
+
+    printf("RBF AVERAGES..    \tTEST: %10.5lg CLASS: %10.5lg%%\n",
+            total_rbf_test_error/total_runs,
+            total_rbf_class_error*100.0/total_runs);
+    printf("PRECISION %10.5lg RECALL %10.5lg FSCORE %10.5lg \n",
+           total_rbf_precision,total_rbf_recall,total_rbf_fscore);
+
     genome=bestgenome;
     p->fitness(genome);
     s=p->printF(genome);

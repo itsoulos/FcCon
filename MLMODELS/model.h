@@ -57,6 +57,13 @@ class Model :public Problem
 		double	classTestError(char *filename,double &precision,double &recall);
 		void	print(char *train,char *itest,char *otest);
 		void	randomizeWeights();
+        void	printConfusionMatrix(vector<double> &dclass,
+                                        vector<double> &T,vector<double> &O,
+                                         vector<double> &precision,
+                                         vector<double> &recall);
+        void    getPrecisionRecall(const char *filename,
+                    double &avg_precision,double &avg_recall,
+                    double &avg_fscore);
 		~Model();
 };
 
