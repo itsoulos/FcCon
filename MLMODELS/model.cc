@@ -7,7 +7,21 @@
 //# define SCALEFACTOR
 
 Matrix xmin,xmax,xmean,xstd,xcurrent;
-
+static int nearestClassIndex(vector<double> &dclass,double value)
+{
+    int pos=-1;
+    double dmin=1e+100;
+    for(int i=0;i<dclass.size();i++)
+    {
+        double d = fabs(dclass[i]-value);
+        if(d<dmin)
+        {
+            dmin = d;
+            pos = i;
+        }
+    }
+    return pos;
+}
 static int isone(double x)
 {
 	return fabs(x-1.0)<1e-5;
@@ -117,9 +131,33 @@ void 	Model::readPatterns(char *filename)
 		if(isone(ypoint[i])) count2++;
 		else	two_classes_flag=0;
 		origy[i]=ypoint[i];
+        int found=-1;
+        for(int j=0;j<dclass.size();j++)
+        {
+            if(fabs(dclass[j]-ypoint[i])<1e-5)
+            {
+                found=j;
+                break;
+            }
+        }
+        if(found==-1)
+            dclass.push_back(ypoint[i]);
 	}
 	fclose(fp);
 
+    //sort dclass
+    for(int i=0;i<dclass.size();i++)
+    {
+        for(int j=0;j<dclass.size()-1;j++)
+        {
+            if(dclass[j+1]<dclass[j])
+            {
+                double t = dclass[j];
+                dclass[j]=dclass[j+1];
+                dclass[j+1]=t;
+            }
+        }
+    }
 
 	
 /**/
@@ -181,7 +219,6 @@ void 	Model::readPatterns(char *filename)
 	
 }
 
-static double sig(double x) {return 1.0/(1.0+exp(-x));}
 void	Model::transform(Matrix x,Matrix &x1)
 {
 	for(int  i=0;i<x.size();i++) 
@@ -228,8 +265,44 @@ double	Model::valError()
 	return s;
 }
 
+double  Model::getAverageClassError(Matrix &x)
+{
+    if(weight.size()!=x.size()) weight.resize(x.size());
+    for(int i=0;i<x.size();i++) weight[i] = x[i];
+    double sum = 0.0;
+    int end=xpoint.size();
+    if(isvalidation) end=4*xpoint.size()/5;
+    vector<int> missed,belong;
+    missed.resize(dclass.size());
+    belong.resize(dclass.size());
+    for(int i=0;i<(int)missed.size();i++)
+    {
+        missed[i]=0;
+        belong[i]=0;
+    }
+    for(int i=0;i<end;i++)
+    {
+        double v = output(xpoint[i]);
+        double c1 = nearestClassIndex(dclass,v);
+        double c2 = nearestClassIndex(dclass,ypoint[i]);
+        if(fabs(c1-c2)>1e-5)
+            missed[(int)c2]++;
+        belong[(int)c2]++;
+    }
+
+    for(int i=0;i<(int)missed.size();i++)
+    {
+        double dc = missed[i]*100.0/belong[i];
+        sum+=dc;
+    }
+    return sum/dclass.size();
+}
+
 double	Model::funmin(Matrix x)
 {
+    extern bool fc_balanceclass;
+    if(fc_balanceclass)
+        return getAverageClassError(x);
 	if(weight.size()!=x.size()) weight.resize(x.size());
 	for(int i=0;i<x.size();i++) weight[i] = x[i];
 	double s=0.0;
@@ -541,21 +614,7 @@ void	Model::printConfusionMatrix(
 }
 
 
-static int nearestClassIndex(vector<double> &dclass,double value)
-{
-    int pos=-1;
-    double dmin=1e+100;
-    for(int i=0;i<dclass.size();i++)
-    {
-        double d = fabs(dclass[i]-value);
-        if(d<dmin)
-        {
-            dmin = d;
-            pos = i;
-        }
-    }
-    return pos;
-}
+
 void    Model::getPrecisionRecall(
                                const char *filename,
                                double &avg_precision,

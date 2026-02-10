@@ -58,21 +58,13 @@ double 	NNprogram::fitness(vector<int> &genome)
 		if(redo>=REDO_MAX) return -1e+100;
 	}
 	mapper->setExpr(pstring);
-	int iters;
-	double avgvalue=0.0;
-	extern int random_seed;
-	const int maxiters=1;
-	for(iters=1;iters<=maxiters;iters++)
-	{
-	srand48(random_seed+iters);
+    extern int random_seed;
+    srand48(random_seed);
 	model->setPatternDimension(pattern_dimension);
 	if(model_type==MODEL_NEURAL) model->randomizeWeights();
 	value=model->train1();
 	if(isnan(value) || isinf(value)) return -1e+100;
 	if(fabs(value)>=1e+100) return -1e+100;
-	avgvalue+=value;
-	}
-	return -avgvalue/maxiters;
 	return -value;
 }
 

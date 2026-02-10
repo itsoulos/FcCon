@@ -13,16 +13,16 @@ extern Matrix		xcurrent;
 class Model :public Problem
 {
 	protected:
-		int    isvalidation;
-		Matrix 	weight;
-		int	num_weights;
-		int	pattern_dimension;
-		int	original_dimension;
+        int             isvalidation;
+        Matrix          weight;
+        int             num_weights;
+        int             pattern_dimension;
+        int             original_dimension;
 		vector<Matrix> 	origx;
-		Matrix	  	origy;
+        Matrix          origy;
 		vector<Matrix> 	xpoint;
-		Matrix		ypoint;
-
+        Matrix          ypoint;
+        Matrix          dclass;
 	public:
 
 		Mapper	*mapper;
@@ -31,10 +31,10 @@ class Model :public Problem
 		void	setNumOfWeights(int w);
 		void 	readPatterns(char *filename);
 		void	replacePattern(int pos,Matrix x,double y);
-		int	getPatternDimension() const;
-		int	getOriginalDimension() const;
-		int	getNumOfWeights() const;
-		int	getNumPatterns() const;
+        int     getPatternDimension() const;
+        int     getOriginalDimension() const;
+        int     getNumOfWeights() const;
+        int     getNumPatterns() const;
 		Matrix	getWeights();
 		Matrix	getXpoint(int pos);
 		double  getYPoint(int pos);
@@ -64,6 +64,8 @@ class Model :public Problem
         void    getPrecisionRecall(const char *filename,
                     double &avg_precision,double &avg_recall,
                     double &avg_fscore);
+
+        double  getAverageClassError(Matrix &x);
 		~Model();
 };
 

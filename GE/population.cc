@@ -193,22 +193,6 @@ void	Population::calcFitnessArray()
         }*/
 		
 	}
-	return;
-	for(int i=0;i<genome_count;i++)
-	{
-		if(fabs(fitness_array[i])>=1e+8 && generation>5)
-		{
-			do
-			{
-				localSearch(i);
-	//			for(int j=0;j<genome_size;j++) 
-	//				  genome[i][j]=g[j]=rand() % MAX_RULE;
-	//			fitness_array[i]=fitness(g);
-				if(fabs(fitness_array[i])<1e+8) break;
-			}while(1);
-		}
-	}
-	
 }
 
 /* Return the current generation */

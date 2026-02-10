@@ -23,6 +23,8 @@ ParameterList mainParamList;
 ParameterList neuralParamList;
 QString selectedTrainFile = "";
 QString selectedTestFile = "";
+bool    fc_balanceclass=false;
+
 void init();
 void run();
 void done();
@@ -45,7 +47,11 @@ void makeMainParams()
     QStringList localList;
     localList<<"none"<<"crossover"<<"mutate"<<"de";
     mainParamList.addParam(Parameter("fc_local",localList[0],localList,"Used local search method"));
-
+    QStringList yesno;
+    yesno<<"no"<<"yes";
+    mainParamList.addParam(Parameter("fc_balanceclass",
+                                     yesno[0],yesno,
+                                     "Use balanced class fitness "));
 }
 
 int    neural_bfgs_iters= 2001;
@@ -297,6 +303,7 @@ void run()
     int length = mainParamList.getParam("fc_length").getValue().toInt();
     int num_weights = mainParamList.getParam("fc_weights").getValue().toInt();
     int generations = mainParamList.getParam("fc_generations").getValue().toInt();
+    fc_balanceclass = mainParamList.getParam("fc_balanceclass").getValue()=="yes";
     vector<int> genome;
     genome.resize(length);
     string s;
@@ -319,7 +326,7 @@ void run()
                 genome=pop->getBestGenome();
                 s=p->printF(genome);
                 p->fitness(genome);
-                if(i%20==0)
+               // if(i%20==0)
                 {
                     printf("RUN: %d GENERATION=%d FITNESS=%.8lg\nPROGRAMS=\n%s",
                         random_seed,i,pop->getBestFitness(),s.c_str());
