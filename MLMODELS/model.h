@@ -3,13 +3,25 @@
 
 # include <CORE/problem.h>
 # include <MLMODELS/mapper.h>
-
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <cmath>
+#include <algorithm>
+#include <random>
+#include <map>
 extern Matrix		xmax;
 extern Matrix		xmin;
 extern Matrix		xmean;
 extern Matrix		xstd;
 extern Matrix		xcurrent;
 
+struct Sample {
+    std::vector<double> features;
+    double label;
+};
 class Model :public Problem
 {
 	protected:
@@ -64,7 +76,16 @@ class Model :public Problem
         void    getPrecisionRecall(const char *filename,
                     double &avg_precision,double &avg_recall,
                     double &avg_fscore);
-
+        double distance(const std::vector<double>& a, const std::vector<double>& b);
+        std::vector<int> kNearest(
+            const std::vector<Sample>& minority,
+            int index,
+            int k);
+        std::vector<Sample> applySMOTE(
+            const std::vector<Sample>& data,
+            int k = 5
+            );
+        void    enableSmote();
         double  getAverageClassError(Matrix &x);
 		~Model();
 };

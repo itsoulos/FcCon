@@ -24,5 +24,7 @@ MODEL=rbf ##Values: rbf,neural
 ## The local optimization procedure
 LOCAL=none ##Values: none,crossover,mutate,de
 ## Enable or disable the balanced class fitness
-BALANCECLASS=yes
-$PROGRAM --fc_iters=$ITERS --fc_generations=$GENS --fc_chromosomes=$COUNT --fc_length=$LENGTH --fc_dimension=$DIMENSION --fc_weights=$WEIGHTS --fc_trainfile=$TRAINFILE --fc_testfile=$TESTFILE --fc_local=$LOCAL --fc_balanceclass=$BALANCECLASS
+BALANCECLASS=no
+## Enable or disable the usage of SMOTE
+ENABLESMOTE=yes
+$PROGRAM --fc_iters=$ITERS --fc_generations=$GENS --fc_chromosomes=$COUNT --fc_length=$LENGTH --fc_dimension=$DIMENSION --fc_weights=$WEIGHTS --fc_trainfile=$TRAINFILE --fc_testfile=$TESTFILE --fc_local=$LOCAL --fc_balanceclass=$BALANCECLASS --fc_enablesmote=$ENABLESMOTE

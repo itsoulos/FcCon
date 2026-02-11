@@ -7,6 +7,109 @@
 //# define SCALEFACTOR
 
 Matrix xmin,xmax,xmean,xstd,xcurrent;
+
+double Model::distance(const std::vector<double>& a, const std::vector<double>& b) {
+    double sum = 0.0;
+    for (size_t i = 0; i < a.size(); i++) {
+        sum += std::pow(a[i] - b[i], 2);
+    }
+    return std::sqrt(sum);
+}
+
+
+
+std::vector<int> Model::kNearest(
+    const std::vector<Sample>& minority,
+    int index,
+    int k
+    ) {
+    std::vector<std::pair<double, int>> distances;
+
+    for (size_t i = 0; i < minority.size(); i++) {
+        if (i == index) continue;
+        double d = distance(minority[index].features,
+                            minority[i].features);
+        distances.push_back({d, i});
+    }
+
+    std::sort(distances.begin(), distances.end());
+
+    std::vector<int> neighbors;
+    for (int i = 0; i < k && i < distances.size(); i++) {
+        neighbors.push_back(distances[i].second);
+    }
+
+    return neighbors;
+}
+
+std::vector<Sample> Model::applySMOTE(
+    const std::vector<Sample>& data,
+    int k
+    ) {
+    std::map<double, std::vector<Sample>> classes;
+
+    for (const auto& s : data) {
+        classes[s.label].push_back(s);
+    }
+
+    // εύρεση πλειοψηφικής κλάσης
+    int maxCount = 0;
+    for (auto& c : classes) {
+        maxCount = std::max(maxCount, (int)c.second.size());
+    }
+
+    std::vector<Sample> balanced = data;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dist(0.0, 1.0);
+
+    for (auto& [label, samples] : classes) {
+        if (samples.size() == maxCount) continue;
+
+        int needed = maxCount - samples.size();
+        int idx = 0;
+
+        while (needed-- > 0) {
+            const Sample& x = samples[idx % samples.size()];
+            auto neighbors = kNearest(samples, idx % samples.size(), k);
+
+            int nIndex = neighbors[gen() % neighbors.size()];
+            const Sample& n = samples[nIndex];
+
+            Sample synthetic;
+            synthetic.label = label;
+
+            for (size_t f = 0; f < x.features.size(); f++) {
+                double gap = dist(gen);
+                double val = x.features[f] +
+                             gap * (n.features[f] - x.features[f]);
+                synthetic.features.push_back(val);
+            }
+
+            balanced.push_back(synthetic);
+            idx++;
+        }
+    }
+
+    return balanced;
+}
+
+
+void    Model::enableSmote()
+{
+    vector<Sample> data;
+    int count = origx.size();
+    data.resize(count);
+    for(int i=0;i<count;i++)
+    {
+        data[i].features=origx[i];
+        data[i].label=origy[i];
+    }
+    applySMOTE(data,5);
+    for(int i=0;i<count;i++)
+        origx[i]=data[i].features;
+}
+
 static int nearestClassIndex(vector<double> &dclass,double value)
 {
     int pos=-1;
@@ -158,65 +261,10 @@ void 	Model::readPatterns(char *filename)
             }
         }
     }
-
-	
-/**/
-/**/
-
 	if(two_classes_flag) scale_factor=count1*1.0/count2;
-	return ;
-	scale_factor=1;
-	for(int i=0;i<d;i++)
-	{
-		xstd[i]=sqrt(fabs(
-			xstd[i]/d-xmean[i]/d*xmean[i]/d
-		));
-		xmean[i]=xmean[i]/d;
-	}
-	
-	if(count1>count2)
-	{
-		int k=count1-count2;
-		for(int i=0;i<k;i++)
-		{
-			int pos=0;
-			do	
-			{
-				pos=rand() % count;
-				if(ypoint[pos]==1) break;
-			}while(1);
-			int s=origx.size();
-			origx.resize(s+1);
-			origx[s].resize(d);
-			origx[s]=origx[pos];
-			origy.resize(s+1);
-			origy[s]=origy[pos];	
-			ypoint.push_back(origy[pos]);
-		}
-	}
-	else
-	{
-		int k=count2-count1;
-		for(int i=0;i<k;i++)
-		{
-			int pos=0;
-			do	
-			{
-				pos=rand() % count;
-				if(ypoint[pos]==0) break;
-			}while(1);
-			int s=origx.size();
-			origx.resize(s+1);
-			origx[s].resize(d);
-			origx[s]=origx[pos];
-			origy.resize(s+1);
-			origy[s]=origy[pos];	
-			ypoint.push_back(origy[pos]);
-		}
-	}
-	xpoint.resize(origx.size());
-	for(int i=0;i<xpoint.size();i++) xpoint[i].resize(d);
-	
+    extern bool fc_enablesmote;
+    if(fc_enablesmote)
+        enableSmote();
 }
 
 void	Model::transform(Matrix x,Matrix &x1)

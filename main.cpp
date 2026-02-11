@@ -24,6 +24,7 @@ ParameterList neuralParamList;
 QString selectedTrainFile = "";
 QString selectedTestFile = "";
 bool    fc_balanceclass=false;
+bool    fc_enablesmote=false;
 
 void init();
 void run();
@@ -52,6 +53,8 @@ void makeMainParams()
     mainParamList.addParam(Parameter("fc_balanceclass",
                                      yesno[0],yesno,
                                      "Use balanced class fitness "));
+    mainParamList.addParam(Parameter("fc_enablesmote",
+                                     yesno[0],yesno,"Enable or disable smote"));
 }
 
 int    neural_bfgs_iters= 2001;
@@ -304,6 +307,8 @@ void run()
     int num_weights = mainParamList.getParam("fc_weights").getValue().toInt();
     int generations = mainParamList.getParam("fc_generations").getValue().toInt();
     fc_balanceclass = mainParamList.getParam("fc_balanceclass").getValue()=="yes";
+    fc_enablesmote  = mainParamList.getParam("fc_enablesmote").getValue()=="yes";
+
     vector<int> genome;
     genome.resize(length);
     string s;
