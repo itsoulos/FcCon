@@ -24,7 +24,9 @@ MODEL=rbf ##Values: rbf,neural
 ## The local optimization procedure
 LOCAL=none ##Values: none,crossover,mutate,de
 ## Enable or disable the balanced class fitness
-BALANCECLASS=yes
+BALANCECLASS=no
 ## Enable or disable the usage of SMOTE
 ENABLESMOTE=no
-$PROGRAM --fc_iters=$ITERS --fc_generations=$GENS --fc_chromosomes=$COUNT --fc_length=$LENGTH --fc_dimension=$DIMENSION --fc_weights=$WEIGHTS --fc_trainfile=$TRAINFILE --fc_testfile=$TESTFILE --fc_local=$LOCAL --fc_balanceclass=$BALANCECLASS --fc_enablesmote=$ENABLESMOTE
+## Enable or disable the usage of Geometric Mean
+ENABLEMEAN=yes
+$PROGRAM --fc_iters=$ITERS --fc_generations=$GENS --fc_chromosomes=$COUNT --fc_length=$LENGTH --fc_dimension=$DIMENSION --fc_weights=$WEIGHTS --fc_trainfile=$TRAINFILE --fc_testfile=$TESTFILE --fc_local=$LOCAL --fc_balanceclass=$BALANCECLASS --fc_enablesmote=$ENABLESMOTE --fc_enablemean=$ENABLEMEAN

@@ -105,7 +105,7 @@ void    Model::enableSmote()
         data[i].features=origx[i];
         data[i].label=origy[i];
     }
-    printf("old count = %d\n",count);
+
     vector<Sample> data2=applySMOTE(data,5);
     origx.clear();
     origy.clear();
@@ -114,7 +114,7 @@ void    Model::enableSmote()
     origy.resize(count);
     xpoint.resize(count);
     ypoint.resize(count);
-    printf("new count = %d\n",count);
+
     for(int i=0;i<count;i++)
     {
         origx[i]=data2[i].features;
@@ -362,10 +362,28 @@ double  Model::getAverageClassError(Matrix &x)
 double	Model::funmin(Matrix x)
 {
     extern bool fc_balanceclass;
+    extern bool fc_enablemean;
+
     if(fc_balanceclass)
         return getAverageClassError(x);
+
 	if(weight.size()!=x.size()) weight.resize(x.size());
 	for(int i=0;i<x.size();i++) weight[i] = x[i];
+
+
+    if(fc_enablemean)
+    {
+
+        double avg_precision,avg_recall,avg_fscore;
+        getPrecisionRecall(
+            avg_precision,
+            avg_recall,
+            avg_fscore);
+
+        double d = 100.0*(1.0-sqrt(avg_precision * avg_recall));
+
+        return d;
+    }
 	double s=0.0;
 	int end=xpoint.size();
 	if(isvalidation) end=4*xpoint.size()/5;
@@ -461,7 +479,6 @@ void	Model::print(char *train,char *itest, char *otest)
 	int d,count;
 	fscanf(fin,"%d",&d);
 	fscanf(fin,"%d",&count);
-	printf("read %d %d \n",d,count);
 	Matrix testx;
 	testx.resize(d);
 	double testy;
@@ -674,7 +691,50 @@ void	Model::printConfusionMatrix(
     delete[] CM;
 }
 
+void    Model::getPrecisionRecall(
+    double &avg_precision,
+    double &avg_recall,
+    double &avg_fscore)
+{
+    int count = xpoint.size();
+    vector<double> T;
+    vector<double> O;
+    T.resize(count);
+    O.resize(count);
 
+
+    for(unsigned int i=0;i<count;i++)
+    {
+        //mapper->map(xpoint[i],xx);
+        double tempOut = output(xpoint[i]);
+        T[i]=nearestClassIndex(dclass,ypoint[i]);
+        O[i]=nearestClassIndex(dclass,tempOut);
+    }
+
+    vector<double> precision;
+    vector<double> recall;
+    vector<double> fscore;
+    fscore.resize(dclass.size());
+    avg_precision = 0.0, avg_recall = 0.0,avg_fscore=0.0;
+    printConfusionMatrix(dclass,T,O,precision,recall);
+    int icount1=dclass.size();
+    int icount2=dclass.size();
+    for(int i=0;i<dclass.size();i++)
+    {
+        if(precision[i]>=0)
+            avg_precision+=precision[i];
+        else icount1--;
+        if(recall[i]>=0)
+            avg_recall+=recall[i];
+        else icount2--;
+        fscore[i]=2.0*precision[i]*recall[i]/(precision[i]+recall[i]);
+        avg_fscore+=fscore[i];
+    }
+    avg_precision/=icount1;
+    avg_recall/=icount2;
+    avg_fscore=2.0 * avg_precision * avg_recall/(avg_precision+avg_recall);
+
+}
 
 void    Model::getPrecisionRecall(
                                const char *filename,
@@ -682,6 +742,7 @@ void    Model::getPrecisionRecall(
                                double &avg_recall,
                                double &avg_fscore)
 {
+
     int count;
     int dim;
     FILE *Fp=fopen(filename,"r");
@@ -714,6 +775,7 @@ void    Model::getPrecisionRecall(
     }
     fclose(Fp);
 
+
     for(int i=0;i<dclass.size();i++)
     {
         for(int j=0;j<dclass.size()-1;j++)
@@ -726,6 +788,7 @@ void    Model::getPrecisionRecall(
             }
         }
     }
+
 
 
     vector<double> T;
@@ -743,6 +806,7 @@ void    Model::getPrecisionRecall(
         T[i]=nearestClassIndex(dclass,testy[i]);
         O[i]=nearestClassIndex(dclass,tempOut);
     }
+
     vector<double> precision;
     vector<double> recall;
     vector<double> fscore;
@@ -765,6 +829,7 @@ void    Model::getPrecisionRecall(
     avg_precision/=icount1;
     avg_recall/=icount2;
     avg_fscore=2.0 * avg_precision * avg_recall/(avg_precision+avg_recall);
+
 }
 
 void	Model::enableValidation()

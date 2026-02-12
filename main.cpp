@@ -23,8 +23,9 @@ ParameterList mainParamList;
 ParameterList neuralParamList;
 QString selectedTrainFile = "";
 QString selectedTestFile = "";
-bool    fc_balanceclass=false;
-bool    fc_enablesmote=false;
+bool    fc_balanceclass =false;
+bool    fc_enablesmote  =false;
+bool    fc_enablemean   =false;
 
 void init();
 void run();
@@ -55,6 +56,8 @@ void makeMainParams()
                                      "Use balanced class fitness "));
     mainParamList.addParam(Parameter("fc_enablesmote",
                                      yesno[0],yesno,"Enable or disable smote"));
+
+    mainParamList.addParam(Parameter("fc_enablemean",yesno[0],yesno,"Enable or disable the usage of geometric mean"));
 }
 
 int    neural_bfgs_iters= 2001;
@@ -186,12 +189,13 @@ void red () {
     printf("\033[0m");
   }
 
+  char train_file[1024];
 void runNeural(int iter,double &testError,double &classError,
                  double &avg_precision,
                  double &avg_recall,
                  double &avg_fscore)
 {
-    char train_file[1024];
+
     char test_file[1024];
     int pattern_dimension = mainParamList.getParam("fc_dimension").getValue().toInt();
 
@@ -244,7 +248,6 @@ void runRbf(int iter,
 {
     srand(iter);
     srand48(iter);
-    char train_file[1024];
     char test_file[1024];
     int pattern_dimension = mainParamList.getParam("fc_dimension").getValue().toInt();
 
@@ -308,6 +311,7 @@ void run()
     int generations = mainParamList.getParam("fc_generations").getValue().toInt();
     fc_balanceclass = mainParamList.getParam("fc_balanceclass").getValue()=="yes";
     fc_enablesmote  = mainParamList.getParam("fc_enablesmote").getValue()=="yes";
+    fc_enablemean  = mainParamList.getParam("fc_enablemean").getValue()=="yes";
 
     vector<int> genome;
     genome.resize(length);
@@ -319,6 +323,8 @@ void run()
     for(random_seed=1;random_seed<=total_runs;random_seed++)
     {
         srand(100+random_seed);
+        strcpy(train_file,selectedTrainFile.toStdString().c_str());
+
         p=new NNprogram(model_type,pattern_dimension,(char *)selectedTrainFile.toStdString().c_str());
         pop=new Population(pcount,length,p);
         pop->setLocalMethod(mainParamList.getParam("fc_local").getValue().toStdString());
@@ -351,6 +357,7 @@ void run()
         //restore flags
         fc_balanceclass = false;
         fc_enablesmote = false;
+	fc_enablemean=false;
 
         //testing
         runNeural(random_seed,e1,c1,pp1,r1,f1);

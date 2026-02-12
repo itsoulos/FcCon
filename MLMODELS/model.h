@@ -76,6 +76,9 @@ class Model :public Problem
         void    getPrecisionRecall(const char *filename,
                     double &avg_precision,double &avg_recall,
                     double &avg_fscore);
+        void    getPrecisionRecall(
+                                double &avg_precision,double &avg_recall,
+                                double &avg_fscore);
         double distance(const std::vector<double>& a, const std::vector<double>& b);
         std::vector<int> kNearest(
             const std::vector<Sample>& minority,

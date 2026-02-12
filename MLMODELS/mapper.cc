@@ -62,7 +62,7 @@ int	Mapper::map(Matrix x,Matrix &x1)
 		//if(!haveX) {delete[] xx;return 0;}
 		if(isnan(x1[i]) || isinf(x1[i])) {delete[] xx;return 0;}
 		if(parser[i]->EvalError()) {delete[] xx;return 0;}
-		if(fabs(x1[i])>1e+2) {delete[] xx;return 0;}
+        //if(fabs(x1[i])>1e+2) {delete[] xx;return 0;}
 	}
 	delete[] xx;
 	haveX=countX;
