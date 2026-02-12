@@ -348,6 +348,11 @@ void run()
         double e1,c1,e2,c2;
         double pp1,r1,f1;
         double pp2,r2,f2;
+        //restore flags
+        fc_balanceclass = false;
+        fc_enablesmote = false;
+
+        //testing
         runNeural(random_seed,e1,c1,pp1,r1,f1);
         runRbf(random_seed,e2,c2,pp2,r2,f2);
         total_neural_test_error+=e1;
@@ -363,6 +368,7 @@ void run()
         total_rbf_precision+=pp2;
         total_rbf_recall+=r2;
         total_rbf_fscore+=f2;
+
 
         if(fabs(pop->getBestFitness())<=best_fitness)
         {

@@ -105,9 +105,22 @@ void    Model::enableSmote()
         data[i].features=origx[i];
         data[i].label=origy[i];
     }
-    applySMOTE(data,5);
+    printf("old count = %d\n",count);
+    vector<Sample> data2=applySMOTE(data,5);
+    origx.clear();
+    origy.clear();
+    count = data2.size();
+    origx.resize(count);
+    origy.resize(count);
+    xpoint.resize(count);
+    ypoint.resize(count);
+    printf("new count = %d\n",count);
     for(int i=0;i<count;i++)
-        origx[i]=data[i].features;
+    {
+        origx[i]=data2[i].features;
+	origy[i]=data2[i].label;
+	ypoint[i]=data2[i].label;
+    }
 }
 
 static int nearestClassIndex(vector<double> &dclass,double value)
