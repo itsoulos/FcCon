@@ -320,8 +320,15 @@ void run()
     vector<int> bestgenome;
     bestgenome.resize(length);
 
+    bool old1,old2,old3;
+	old1=fc_balanceclass;
+	old2=fc_enablesmote;
+	old3=fc_enablemean;
     for(random_seed=1;random_seed<=total_runs;random_seed++)
     {
+	fc_balanceclass=old1;
+	fc_enablesmote=old2;
+	fc_enablemean=old3;
         srand(100+random_seed);
         strcpy(train_file,selectedTrainFile.toStdString().c_str());
 
@@ -355,6 +362,9 @@ void run()
         double pp1,r1,f1;
         double pp2,r2,f2;
         //restore flags
+	old1=fc_balanceclass;
+	old2=fc_enablesmote;
+	old3=fc_enablemean;
         fc_balanceclass = false;
         fc_enablesmote = false;
 	fc_enablemean=false;
