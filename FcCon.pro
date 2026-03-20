@@ -20,6 +20,7 @@ SOURCES += \
         GE/doublestack.cc \
         GE/fparser.cc \
         GE/fpoptimizer.cc \
+        GE/integeranneal.cpp \
         GE/nnprogram.cc \
         GE/population.cc \
         GE/program.cc \
@@ -51,6 +52,7 @@ HEADERS += \
     GE/fparser.hh \
     GE/fpconfig.hh \
     GE/fptypes.hh \
+    GE/integeranneal.h \
     GE/nnprogram.h \
     GE/population.h \
     GE/program.h \

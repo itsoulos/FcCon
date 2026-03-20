@@ -2,10 +2,9 @@
 # include <stdlib.h>
 # include <string.h>
 # include <math.h>
-# include <iostream>
 # include <GRS/grs.h>
 # include <GE/nnprogram.h>
-
+# include <GE/integeranneal.h>
 # define MAX_RULE	10204
 
 /* Population constructor */
@@ -175,22 +174,20 @@ void	Population::calcFitnessArray()
 	{
 		for(int j=0;j<genome_size;j++) g[j]=genome[i][j];	
 		fitness_array[i]=fitness(g);
-		if(rand()*1.0/RAND_MAX<=0.005)
-			localSearch(i);
+        //if(rand()*1.0/RAND_MAX<=0.005)
+        //	localSearch(i);
 
-		//else 
-		//localSearch(i);
-		if(fabs(fitness_array[i])<dmin)
+        if(fabs(fitness_array[i])<dmin)
 		{
 			dmin=fabs(fitness_array[i]);
 		}
 		if(fabs(fitness_array[i])>=1e+100) icount++;	
 		
-        /*if((i+1)%50==0)
+        if((i+1)%50==0)
 		{
 			printf(" %d:%.5lg ",i+1,dmin);
 			fflush(stdout);
-        }*/
+        }
 		
 	}
 }
@@ -218,16 +215,16 @@ void	Population::nextGeneration()
 {
 	calcFitnessArray();
 	
-	/*
+
 	
-	const int mod=20;
-	const int count=20;	
+    const int mod=50;
+    const int count=10;
 	
 	if((generation+1) % mod==0) 
 	{
 		for(int i=0;i<count;i++)
 			localSearch(rand()%genome_count);
-	}*/
+    }
 	select();
 	crossover();
 	if(generation) mutate();
@@ -408,6 +405,18 @@ void	Population::localSearch(int pos)
 		else	genome[pos][ipos]=old_value;
 		}
 	}
+    }
+    else
+    if(localMethod == "siman")
+    {
+            double f = fitness_array[pos];
+            IntegerAnneal lt(program);
+            lt.setPoint(g,fitness_array[pos]);
+            lt.Solve();
+            lt.getPoint(g,fitness_array[pos]);
+            for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
+
+            printf("SIMAN[%d] %lf=>%lf\n",pos,f,fitness_array[pos]);
     }
     else
     if(localMethod=="de")

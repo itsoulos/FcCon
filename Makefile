@@ -60,6 +60,7 @@ SOURCES       = CORE/collection.cc \
 		GE/doublestack.cc \
 		GE/fparser.cc \
 		GE/fpoptimizer.cc \
+		GE/integeranneal.cpp \
 		GE/nnprogram.cc \
 		GE/population.cc \
 		GE/program.cc \
@@ -87,6 +88,7 @@ OBJECTS       = collection.o \
 		doublestack.o \
 		fparser.o \
 		fpoptimizer.o \
+		integeranneal.o \
 		nnprogram.o \
 		population.o \
 		program.o \
@@ -202,6 +204,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		GE/fparser.hh \
 		GE/fpconfig.hh \
 		GE/fptypes.hh \
+		GE/integeranneal.h \
 		GE/nnprogram.h \
 		GE/population.h \
 		GE/program.h \
@@ -226,6 +229,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		GE/doublestack.cc \
 		GE/fparser.cc \
 		GE/fpoptimizer.cc \
+		GE/integeranneal.cpp \
 		GE/nnprogram.cc \
 		GE/population.cc \
 		GE/program.cc \
@@ -446,8 +450,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents CORE/collection.h CORE/parameter.h CORE/parameterlist.h CORE/problem.h GE/cprogram.h GE/doublestack.h GE/f2c.h GE/fparser.hh GE/fpconfig.hh GE/fptypes.hh GE/nnprogram.h GE/population.h GE/program.h GE/rule.h GE/symbol.h GRS/grs.h GRS/grspopulation.h GRS/rlsprogram.h MLMODELS/Rbf.h MLMODELS/gensolver.h MLMODELS/kmeans.h MLMODELS/knn.h MLMODELS/mapper.h MLMODELS/matrix_functions.h MLMODELS/model.h MLMODELS/neural.h MLMODELS/rbf_model.h $(DISTDIR)/
-	$(COPY_FILE) --parents CORE/collection.cc CORE/parameter.cpp CORE/parameterlist.cpp CORE/problem.cc GE/cprogram.cc GE/doublestack.cc GE/fparser.cc GE/fpoptimizer.cc GE/nnprogram.cc GE/population.cc GE/program.cc GE/rule.cc GE/symbol.cc GRS/grs.cc GRS/grspopulation.cc GRS/rlsprogram.cc MLMODELS/Rbf.cc MLMODELS/gensolver.cc MLMODELS/kmeans.cc MLMODELS/knn.cc MLMODELS/mapper.cc MLMODELS/matrix_functions.cc MLMODELS/model.cc MLMODELS/neural.cc MLMODELS/rbf_model.cc MLMODELS/tolmin.cc main.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents CORE/collection.h CORE/parameter.h CORE/parameterlist.h CORE/problem.h GE/cprogram.h GE/doublestack.h GE/f2c.h GE/fparser.hh GE/fpconfig.hh GE/fptypes.hh GE/integeranneal.h GE/nnprogram.h GE/population.h GE/program.h GE/rule.h GE/symbol.h GRS/grs.h GRS/grspopulation.h GRS/rlsprogram.h MLMODELS/Rbf.h MLMODELS/gensolver.h MLMODELS/kmeans.h MLMODELS/knn.h MLMODELS/mapper.h MLMODELS/matrix_functions.h MLMODELS/model.h MLMODELS/neural.h MLMODELS/rbf_model.h $(DISTDIR)/
+	$(COPY_FILE) --parents CORE/collection.cc CORE/parameter.cpp CORE/parameterlist.cpp CORE/problem.cc GE/cprogram.cc GE/doublestack.cc GE/fparser.cc GE/fpoptimizer.cc GE/integeranneal.cpp GE/nnprogram.cc GE/population.cc GE/program.cc GE/rule.cc GE/symbol.cc GRS/grs.cc GRS/grspopulation.cc GRS/rlsprogram.cc MLMODELS/Rbf.cc MLMODELS/gensolver.cc MLMODELS/kmeans.cc MLMODELS/knn.cc MLMODELS/mapper.cc MLMODELS/matrix_functions.cc MLMODELS/model.cc MLMODELS/neural.cc MLMODELS/rbf_model.cc MLMODELS/tolmin.cc main.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -529,6 +533,14 @@ fpoptimizer.o: GE/fpoptimizer.cc GE/fpconfig.hh \
 		GE/fparser.hh \
 		GE/fptypes.hh
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o fpoptimizer.o GE/fpoptimizer.cc
+
+integeranneal.o: GE/integeranneal.cpp GE/integeranneal.h \
+		CORE/problem.h \
+		GE/program.h \
+		GE/symbol.h \
+		GE/rule.h \
+		GE/doublestack.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o integeranneal.o GE/integeranneal.cpp
 
 nnprogram.o: GE/nnprogram.cc GE/nnprogram.h \
 		GE/program.h \
