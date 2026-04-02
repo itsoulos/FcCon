@@ -54,7 +54,7 @@ void    IntegerAnneal::Solve()
 	for(int j=0;j<10;j++)
 	{
         int randPos = rand() % bestx.size();
-		int range = 10;
+        int range = 20;
 		int direction = rand() % 2==1?1:-1;
         int newValue =  y[randPos] + direction * (rand() % range);
         if(newValue<0) newValue = 0;
@@ -64,11 +64,11 @@ void    IntegerAnneal::Solve()
 
         if(isnan(fy) || isinf(fy)) continue;
 
-        if(fy>ypoint)
+        if(fabs(fy)<fabs(ypoint))
         {
             xpoint = y;
             ypoint = fy;
-            if(ypoint>besty)
+            if(fabs(ypoint)<fabs(besty))
             {
                 bestx = xpoint;
                 besty = ypoint;
@@ -83,7 +83,7 @@ void    IntegerAnneal::Solve()
             {
                 xpoint = y;
                 ypoint = fy;
-                if((ypoint)>(besty))
+                if(fabs(ypoint)<fabs(besty))
                 {
                     bestx = xpoint;
                     besty = ypoint;
@@ -93,8 +93,8 @@ void    IntegerAnneal::Solve()
         }
         updateTemp();
         if(T0<=1e-6) break;
-      //  printf("Iteration: %4d Temperature: %20.10lg Value: %20.10lg\n",
-        //       k,T0,besty);
+       printf("Iteration: %4d Temperature: %20.10lg Value: %20.10lg\n",
+               k,T0,besty);
 
     }
 }

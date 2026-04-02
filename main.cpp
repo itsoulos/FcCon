@@ -47,7 +47,7 @@ void makeMainParams()
     modelList<<"rbf"<<"neural";
     mainParamList.addParam(Parameter("fc_model",modelList[0],modelList,"Used model for feature construction"));
     QStringList localList;
-    localList<<"none"<<"crossover"<<"mutate"<<"de"<<"siman";
+    localList<<"none"<<"crossover"<<"mutate"<<"de"<<"siman"<<"gd"<<"adam";
     mainParamList.addParam(Parameter("fc_local",localList[0],localList,"Used local search method"));
     QStringList yesno;
     yesno<<"no"<<"yes";

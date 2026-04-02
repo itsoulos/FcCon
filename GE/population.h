@@ -17,14 +17,14 @@ class Population
 		int	generation;
 		Program	*program;
 
-		void	select();
-		void	crossover();
-		void	mutate();
-		void	calcFitnessArray();
-		void	replaceWorst();
+        void    	select();
+        void    	crossover();
+        void    	mutate();
+        void    	calcFitnessArray();
+        void    	replaceWorst();
 		int	elitism;
         string localMethod="none";
-		void	localSearch(int gpos);
+        void    	localSearch(int gpos);
 	public:
 		Population(int gcount,int gsize,Program *p);
 		double 	fitness(vector<int> &g);
@@ -33,15 +33,26 @@ class Population
         int     getGeneration() const;
         int     getCount() const;
         int     getSize() const;
-		void	nextGeneration();
-		void	setMutationRate(double r);
-		void	setSelectionRate(double r);
+        void    nextGeneration();
+        void    	setMutationRate(double r);
+        void    	setSelectionRate(double r);
 		double	getSelectionRate() const;
 		double	getMutationRate() const;
 		double	getBestFitness() const;
 		double	evaluateBestFitness();
 		vector<int> getBestGenome() const;
-		void	reset();
+        void	 reset();
+        vector<int> discreteGradient( vector<int>& x);
+        vector<int> discreteStep(vector<int>& x,vector<int>& grad);
+        void integerLocalSearch(vector<int> &x,int maxSteps = 20);
+        vector<int> integerAdam(
+            vector<int> x,
+            int steps = 20,
+            double alpha = 0.5,
+            double beta1 = 0.9,
+            double beta2 = 0.999,
+            double eps = 1e-8
+            ) ;
 		~Population();
 		
 };

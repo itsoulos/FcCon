@@ -22,9 +22,9 @@ TESTFILE=$DATAPATH/$DATAFILE.test
 ## The model used for feature construction
 MODEL=rbf ##Values: rbf,neural
 ## The local optimization procedure
-LOCAL=siman ##Values: none,crossover,mutate,de,siman
+LOCAL=adam ##Values: none,crossover,mutate,de,siman,gd,adam
 ## Enable or disable the balanced class fitness
-BALANCECLASS=yes
+BALANCECLASS=no
 ## Enable or disable the usage of SMOTE
 ENABLESMOTE=no
 ## Enable or disable the usage of Geometric Mean

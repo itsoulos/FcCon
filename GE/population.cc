@@ -37,7 +37,7 @@ Population::Population(int gcount,int gsize,Program *p)
 }
 
 /* Reinitialize the population to random */
-void	Population::reset()
+void    	Population::reset()
 {
 	generation = 0;
 	for(int i=0;i<genome_count;i++)
@@ -54,7 +54,7 @@ double 	Population::fitness(vector<int> &g)
 }
 
 /* The selection of the chromosomes according to the fitness value is performed */
-void	Population::select()
+void	 Population::select()
 {
 	int itemp[genome_size];
 	for(int i=0;i<genome_count;i++)
@@ -81,7 +81,7 @@ void	Population::select()
 /*     (if genome_count > 100 ) tournament_size = 10   else   tournament_size = 4 */
 /* Select 2 chromosomes based on the tournament size and cross them over based on the crossover probability */
 /* There is 1 crossover point and it is random */
-void	Population::crossover()
+void        Population::crossover()
 {
         int parent[2];
         int nchildren=(int)((1.0 - selection_rate) * genome_count);
@@ -137,14 +137,14 @@ void	Population::crossover()
 	}
 }
 
-void	Population::setElitism(int s)
+void        Population::setElitism(int s)
 {
 	elitism = s;
 }
 
 /* Mutate the current population */
 /* Standard mutation algorithm: mutate all chromosomes in the population based on the mutation probability */
-void	Population::mutate()
+void    	Population::mutate()
 {
 	int start = elitism * (int)(genome_count*selection_rate);
 	start = elitism;
@@ -163,7 +163,7 @@ void	Population::mutate()
 }
 
 /* Evaluate the fitness for all chromosomes in the current population */
-void	Population::calcFitnessArray()
+void    	Population::calcFitnessArray()
 {
 	vector<int> g;
 	g.resize(genome_size);
@@ -211,14 +211,14 @@ int	Population::getSize() const
 }
 
 /* Evolve the next generation */
-void	Population::nextGeneration()
+void        Population::nextGeneration()
 {
 	calcFitnessArray();
-	
 
+    if((generation+1)%10==0) localSearch(0);
 	
     const int mod=50;
-    const int count=10;
+    const int count=20;
 	
 	if((generation+1) % mod==0) 
 	{
@@ -231,7 +231,7 @@ void	Population::nextGeneration()
 	++generation;
 }
 
-void	Population::replaceWorst()
+void    	Population::replaceWorst()
 {
 	vector<int> xtrial;
 	xtrial.resize(genome_size);
@@ -253,13 +253,13 @@ void	Population::replaceWorst()
 }
 
 /* Set the mutation rate */
-void	Population::setMutationRate(double r)
+void        Population::setMutationRate(double r)
 {
 	if(r>=0 && r<=1) mutation_rate = r;
 }
 
 /* Set the selection rate */
-void	Population::setSelectionRate(double r)
+void    	Population::setSelectionRate(double r)
 {
 	if(r>=0 && r<=1) selection_rate = r;
 }
@@ -337,12 +337,152 @@ class PopulationProblem: public Problem
 
 };
 
+
+
+vector<int> Population::discreteGradient(vector<int>& x)
+{
+    int n = x.size();
+    vector<int> grad(n);
+
+    double fx = fitness(x);
+
+    for (int i = 0; i < n; i++) {
+
+        vector<int> x_plus = x;
+        vector<int> x_minus = x;
+
+        x_plus[i] += 1;
+        x_minus[i] -= 1;
+        if(x_minus[i]<0) x_minus[i]=0;
+
+        double f_plus = fitness(x_plus);
+        double f_minus = fitness(x_minus);
+
+        if (fabs(f_plus) < fabs(fx))
+            grad[i] = +1;
+        else if (fabs(f_minus) < fabs(fx))
+            grad[i] = -1;
+        else
+            grad[i] = 0;
+    }
+    return grad;
+}
+
+vector<int> Population::discreteStep(vector<int>& x,vector<int>& grad)
+{
+    vector<int> res = x;
+
+    for (int i = 0; i < (int)x.size(); i++)
+    {
+        res[i] += grad[i];
+    }
+
+    return res;
+}
+
+void Population::integerLocalSearch(vector<int> &x,int maxSteps)
+{
+    double bestVal = fitness(x);
+    int stepSize = 100;
+    for (int step = 0; step < maxSteps; step++) {
+
+        vector<int> grad = discreteGradient(x);
+
+        vector<int> candidate = x;
+
+        for (int i = 0; i < x.size(); i++)
+        {
+            candidate[i] += grad[i] * stepSize;
+            if(candidate[i]<0) candidate[i]=0;
+        }
+
+        double val = fitness(candidate);
+
+        if (fabs(val) < fabs(bestVal)) {
+            x = candidate;
+            bestVal = val;
+        } else {
+            stepSize = max(1, stepSize / 2); // learning rate decay
+        }
+        printf("GD[%4d]=%20.10lg\n",step,bestVal);
+    }
+
+
+}
+
+
+vector<int> Population::integerAdam(
+    vector<int> x,
+    int steps,
+    double alpha,
+    double beta1,
+    double beta2,
+    double eps
+    ) {
+    int n = x.size();
+
+    vector<double> m(n, 0.0);
+    vector<double> v(n, 0.0);
+
+    double bestVal = fitness(x);
+
+    for (int t = 1; t <= steps; t++) {
+
+        vector<int> g_int = discreteGradient(x);
+printf("ADAM[%d] TRY: %20.10lf\n",t,bestVal);
+        // convert gradient to double
+        vector<double> g(n);
+        for (int i = 0; i < n; i++)
+            g[i] = (double)g_int[i];
+
+        // update moments
+        for (int i = 0; i < n; i++) {
+            m[i] = beta1 * m[i] + (1 - beta1) * g[i];
+            v[i] = beta2 * v[i] + (1 - beta2) * g[i] * g[i];
+        }
+
+        // bias correction
+        vector<double> m_hat(n), v_hat(n);
+        for (int i = 0; i < n; i++) {
+            m_hat[i] = m[i] / (1 - pow(beta1, t));
+            v_hat[i] = v[i] / (1 - pow(beta2, t));
+        }
+
+        // candidate update
+        vector<int> candidate = x;
+
+        for (int i = 0; i < n; i++) {
+
+            double step = alpha * m_hat[i] / (sqrt(v_hat[i]) + eps);
+            double p = fabs(step);
+
+            if (rand()*1.0/RAND_MAX < p) {
+                candidate[i] += (step > 0 ? 1 : -1);
+            }
+
+            if(candidate[i]<0) candidate[i]=0;
+        }
+
+        double val = fitness(candidate);
+
+        if (fabs(val) < fabs(bestVal)) {
+            x = candidate;
+            bestVal = val;
+        }
+        else {
+            alpha *= 0.7; // decay learning rate
+        }
+    }
+
+    return x;
+}
+
 void    Population::setLocalMethod(string s)
 {
     localMethod = s;
 }
 
-void	Population::localSearch(int pos)
+void        Population::localSearch(int pos)
 {
 	vector<int> g;
 	g.resize(genome_size);
@@ -370,7 +510,7 @@ void	Population::localSearch(int pos)
 			double f=fitness(g);
 			if(fabs(f)<fabs(fitness_array[pos]))
 			{
-            //printf("CROSSOVER. NEW MIN[%4d]=%10.4lg\n",pos,f);
+            printf("CROSSOVER. NEW MIN[%4d]=%10.4lg\n",pos,f);
 				for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
 				fitness_array[pos]=f;
 			}
@@ -454,6 +594,30 @@ void	Population::localSearch(int pos)
              else	genome[pos][i]=old_value;
          }
     }
+    }
+    else
+        if(localMethod=="gd")
+    {
+        integerLocalSearch(g);
+        double ff = fitness(g);
+        if(fabs(ff)<fabs(fitness_array[pos]))
+        {
+            printf("GD. NEW VALUE[%d] = %lf=>%lf\n",pos,fitness_array[pos],ff);
+            fitness_array[pos]=ff;
+            for(int j=0;j<g.size();j++) genome[pos][j]=g[j];
+        }
+    }
+    else
+        if(localMethod == "adam")
+    {
+        g=integerAdam(g);
+        double ff = fitness(g);
+        if(fabs(ff)<fabs(fitness_array[pos]))
+        {
+            printf("ADAM. NEW VALUE[%d] = %lf=>%lf\n",pos,fitness_array[pos],ff);
+            fitness_array[pos]=ff;
+            for(int j=0;j<g.size();j++) genome[pos][j]=g[j];
+        }
     }
 	
 }
