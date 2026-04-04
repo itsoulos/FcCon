@@ -48,21 +48,21 @@ void    IntegerAnneal::Solve()
     {
         for(i=1;i<=neps;i++)
         {
-        double fy;
-        for(int j=0;j<bestx.size();j++)
-        y[j]=xpoint[j];
-	for(int j=0;j<10;j++)
-	{
-        int randPos = rand() % bestx.size();
-        int range = 20;
-		int direction = rand() % 2==1?1:-1;
-        int newValue =  y[randPos] + direction * (rand() % range);
-        if(newValue<0) newValue = 0;
-        y[randPos]=newValue;
-	}
+            double fy;
+            y = xpoint;
+            again:
+        for(int j=0;j<10;j++)
+            {
+            int randPos = rand() % bestx.size();
+            int range = 10;
+            int direction = rand() % 2==1?1:-1;
+            int newValue =  y[randPos] + direction * (rand() % range);
+            if(newValue<0) newValue = 0;
+            y[randPos]=newValue;
+        }
         fy = myProblem->fitness(y);
 
-        if(isnan(fy) || isinf(fy)) continue;
+        if(fabs(fy)>1e+10) goto again;
 
         if(fabs(fy)<fabs(ypoint))
         {

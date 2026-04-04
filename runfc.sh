@@ -2,7 +2,7 @@ BASEPATH=~/Desktop/ERGASIES/FcCon/
 PROGRAM=$BASEPATH/FcCon
 DATAPATH=$BASEPATH/datasets/tenfolding/
 ## Number of iterations
-ITERS=10
+ITERS=1
 ## Number of allowed generations
 GENS=200
 ## Number of chromosomes
@@ -22,7 +22,7 @@ TESTFILE=$DATAPATH/$DATAFILE.test
 ## The model used for feature construction
 MODEL=rbf ##Values: rbf,neural
 ## The local optimization procedure
-LOCAL=adam ##Values: none,crossover,mutate,de,siman,gd,adam
+LOCAL=siman ##Values: none,crossover,mutate,de,siman,gd,adam
 ## Enable or disable the balanced class fitness
 BALANCECLASS=no
 ## Enable or disable the usage of SMOTE

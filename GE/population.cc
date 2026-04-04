@@ -5,8 +5,79 @@
 # include <GRS/grs.h>
 # include <GE/nnprogram.h>
 # include <GE/integeranneal.h>
-# define MAX_RULE	10204
+# define MAX_RULE	256
 
+mt19937 gen(random_device{}());
+
+double randDouble(double a, double b) {
+    uniform_real_distribution<> dist(a, b);
+    return dist(gen);
+}
+
+int randInt(int a, int b) {
+    uniform_int_distribution<> dist(a, b);
+    return dist(gen);
+}
+vector<int> Population::neighbor(const vector<int>& x, int stepSize ) {
+    vector<int> y = x;
+
+    int i = randInt(0, x.size() - 1);
+
+    // αλλαγή σε μία διάσταση
+    y[i] += randInt(-stepSize, stepSize);
+    if(y[i]<0) y[i]=0;
+
+    return y;
+}
+
+vector<int> Population::simulatedAnnealing(
+    vector<int> &x,
+    double T0,
+    double Tmin,
+    double alpha,
+    int iterPerTemp
+    ) {
+    double T = T0;
+
+    vector<int> best = x;
+    double bestVal = fitness(x);
+
+    while (T > Tmin) {
+
+        for (int k = 0; k < iterPerTemp; k++) {
+
+            vector<int> y = neighbor(x);
+
+            double fx = (fitness(x));
+            double fy = (fitness(y));
+
+            double delta = fabs(fy) - fabs(fx);
+
+            if (delta < 0) {
+                // καλύτερη λύση
+                x = y;
+            } else {
+                // πιθανότητα αποδοχής
+                double p = exp(-delta / T);
+
+                if (randDouble(0,1) < p)
+                    x = y;
+            }
+
+            // update best
+            double val = fitness(x);
+            if (fabs(val) < fabs(bestVal)) {
+                best = x;
+                bestVal = val;
+            }
+        }
+        printf("T=%20.10lf BEST=%20.10lf\n",T,bestVal);
+        // cooling
+        T *= alpha;
+    }
+
+    return best;
+}
 /* Population constructor */
 /* Input: genome count , genome size, pointer to Program instance */
 Population::Population(int gcount,int gsize,Program *p)
@@ -215,17 +286,27 @@ void        Population::nextGeneration()
 {
 	calcFitnessArray();
 
-    if((generation+1)%10==0) localSearch(0);
 	
     const int mod=50;
-    const int count=20;
+    const int count=0;
 	
-	if((generation+1) % mod==0) 
-	{
-		for(int i=0;i<count;i++)
-			localSearch(rand()%genome_count);
-    }
+
 	select();
+    if((generation+1)%20==0) 
+    {
+	    localSearch(0);
+	    localSearch(rand()%genome_count);
+	    localSearch(rand()%genome_count);
+	    localSearch(rand()%genome_count);
+	    localSearch(rand()%genome_count);
+	    select();
+    }
+    if((generation+1) % mod==0)
+    {
+        for(int i=0;i<count;i++)
+            localSearch(rand()%genome_count);
+        select();
+    }
 	crossover();
 	if(generation) mutate();
 	++generation;
@@ -492,11 +573,14 @@ void        Population::localSearch(int pos)
     {
 	for(int iters=1;iters<=100;iters++)
 	{
-		int gpos=rand() % genome_count;
-		int cutpoint=rand() % genome_size;
+            int gpos,cutpoint;
+        again:
+            gpos=rand() % genome_count;
+            cutpoint=rand() % genome_size;
 		for(int j=0;j<cutpoint;j++) g[j]=genome[pos][j];
 		for(int j=cutpoint;j<genome_size;j++) g[j]=genome[gpos][j];
 		double f=fitness(g);
+        if(fabs(f)>1e+10) goto again;
 		if(fabs(f)<fabs(fitness_array[pos]))
 		{
             printf("CROSSOVER. NEW MIN[%4d]=%10.4lg\n",pos,f);
@@ -522,27 +606,30 @@ void        Population::localSearch(int pos)
     {
 	for(int i=0;i<genome_size;i++)
 	{
-		int ipos = rand() % genome_size;
+            int ipos;
+
+        ipos = rand() % genome_size;
 		for(int k=0;k<20;k++)
 		{
-		int old_value = genome[pos][ipos];
-		int range = 20;
-		int direction = rand()%2==1?1:-1;
-		int delta = rand() % range;
-		int new_value = old_value+direction*delta;
+            int old_value,range,direction,delta,new_value;
+             againmutate:
+         old_value = genome[pos][ipos];
+         range = 20;
+         direction = rand()%2==1?1:-1;
+         delta = rand() % range;
+         new_value = old_value+direction*delta;
 		if(new_value<0) new_value=old_value-direction*delta;
             	genome[pos][ipos]=new_value;
 		for(int j=0;j<genome_size;j++) g[j]=genome[pos][j];
 		double trial_fitness=fitness(g);
 
-
 		if(fabs(trial_fitness)<fabs(fitness_array[pos]))
 		{
 			fitness_array[pos]=trial_fitness;
-            //printf("MUTATE. NEW BEST VALUE[%4d] = %20.10lg \n",pos,fitness_array[pos]);
+            printf("MUTATE. NEW BEST VALUE[%4d] = %20.10lg \n",pos,fitness_array[pos]);
 			return;
 		}
-		else	genome[pos][ipos]=old_value;
+        else 	genome[pos][ipos]=old_value;
 		}
 	}
     }
@@ -550,10 +637,12 @@ void        Population::localSearch(int pos)
     if(localMethod == "siman")
     {
             double f = fitness_array[pos];
-            IntegerAnneal lt(program);
-            lt.setPoint(g,fitness_array[pos]);
-            lt.Solve();
-            lt.getPoint(g,fitness_array[pos]);
+            //IntegerAnneal lt(program);
+            //lt.setPoint(g,fitness_array[pos]);
+            //lt.Solve();
+            //lt.getPoint(g,fitness_array[pos]);
+            g=simulatedAnnealing(g);
+            fitness_array[pos]=fitness(g);
             for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
 
             printf("SIMAN[%d] %lf=>%lf\n",pos,f,fitness_array[pos]);
