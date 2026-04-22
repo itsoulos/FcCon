@@ -211,9 +211,9 @@ double	RlsProgram::fitness(vector<int> &genome)
 	double	value=0.0;
 	vector<double> dx;
 	dx.resize(dimension);
-	Matrix xx1;
-	xx1.resize(dimension);
-	Matrix xx2;
+    Data xx1;
+    xx1.resize(dimension);
+    Data xx2;
 	xx2.resize(dimension);
 	int ok_flag=0;
 	vector<double> lmargin,rmargin;

@@ -11,6 +11,11 @@ QMAKE_CFLAGS_RELEASE += -std=c++11
 
 QMAKE_CXXFLAGS += -O4 -fopenmp -march=native -unroll-loops -omit-frame-pointer -Winline -unsafe-math-optimizations -mtune=native -ffast-math -Ofast
 QMAKE_CFLAGS += -O4 -fopenmp -march=native -unroll-loops -omit-frame-pointer -Winline -unsafe-math-optimizations -mtune=native  -ffast-math -Ofast
+
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_LFLAGS += -fopenmp
+##HEADER FOR EIGEN3
+INCLUDEPATH += /usr/include/eigen3
 SOURCES += \
         CORE/collection.cc \
         CORE/parameter.cpp \
@@ -30,6 +35,7 @@ SOURCES += \
         GRS/grspopulation.cc \
         GRS/rlsprogram.cc \
         MLMODELS/Rbf.cc \
+        MLMODELS/airbf.cpp \
         MLMODELS/gensolver.cc \
         MLMODELS/kmeans.cc \
         MLMODELS/knn.cc \
@@ -62,6 +68,7 @@ HEADERS += \
     GRS/grspopulation.h \
     GRS/rlsprogram.h \
     MLMODELS/Rbf.h \
+    MLMODELS/airbf.h \
     MLMODELS/gensolver.h \
     MLMODELS/kmeans.h \
     MLMODELS/knn.h \

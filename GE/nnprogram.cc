@@ -13,6 +13,9 @@ NNprogram::NNprogram(int type,int pdimension,char *filename)
 	else
 	if(type == MODEL_RBF)
 		model = new Rbf(mapper);
+    else
+        if(type==MODEL_AIRBF)
+        model=new AiRbf(mapper);
 	else
 		model = new KNN(mapper);
 	pattern_dimension = pdimension;

@@ -20,7 +20,7 @@ Neural::Neural(Mapper *m):Model(m)
 {
 }
 
-void	Neural::setWeights(Matrix x)
+void        Neural::setWeights(Data x)
 {
 	for(int i=0;i<weight.size();i++) weight[i]=x[i];
 }
@@ -43,7 +43,7 @@ double Neural::train1()
 	return tolmin(weight,Info);
 
 	double oldval=funmin(weight);
-	Matrix saveweight;
+    Data saveweight;
 	saveweight.resize(weight.size());
 	saveweight=weight;
 	for(int i=1;i<=200;i++)
@@ -89,7 +89,7 @@ double	Neural::countViolate(double limit)
 void devmarFunmin(double *p,double *x,int m,int n,void *data)
 {
 	Neural *neural = (Neural *)data;
-	Matrix w = neural->getWeights();
+    Data w = neural->getWeights();
 	for(int i=0;i<m;i++) w[i]=p[i];
 	neural->setWeights(w);	
 	for(int i=0;i<n;i++)
@@ -102,7 +102,7 @@ void devmarFunmin(double *p,double *x,int m,int n,void *data)
 void devmarJac(double *p, double *jac, int m, int n, void *data)
 {
 	Neural *neural = (Neural *)data;
-	Matrix w = neural->getWeights();
+    Data w = neural->getWeights();
 	for(int i=0;i<m;i++) w[i]=p[i];
 	neural->setWeights(w);	
 	for(int i=0;i<n;i++)
@@ -155,7 +155,7 @@ v=info[6];
 }
 
 
-double Neural::output(Matrix x)
+double Neural::output(Data &x)
 {
 	double arg=0.0,per=0.0;
 	int dimension = pattern_dimension;
@@ -175,7 +175,7 @@ double Neural::output(Matrix x)
         return per;
 }
 
-void   Neural::getDeriv(Matrix x,Matrix &g)
+void   Neural::getDeriv(Data &x,Data &g)
 {
   	double arg;
         double s;

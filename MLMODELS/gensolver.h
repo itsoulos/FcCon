@@ -25,24 +25,24 @@ class GenSolver
 	public:
 		void	local();
 		GenSolver(int gcount,Problem *p,double mx,int f);
-		void	setElitism(int s);
-		int	getGeneration() const;
-		int	getCount() const;
-		int	getSize() const;
-		void	nextGeneration();
-		void	setMutationRate(double r);
-		void	setSelectionRate(double r);
-		double	getSelectionRate() const;
-		double	getMutationRate() const;
-		double	getBestFitness() const;
-		double	evaluateBestFitness();
+        void        setElitism(int s);
+        int     getGeneration() const;
+        int     getCount() const;
+        int     getSize() const;
+        void        nextGeneration();
+        void        setMutationRate(double r);
+        void        setSelectionRate(double r);
+        double      getSelectionRate() const;
+        double      getMutationRate() const;
+        double      getBestFitness() const;
+        double      evaluateBestFitness();
 		vector<double> getBestGenome() const;
-		void	reset();
-		void	setBest(double *x,double y);
+        void        reset();
+        void        setBest(double *x,double y);
 		~GenSolver();
 		
 };
-extern void GenSolve(Problem *p,Matrix &x,double &y,double mx,int f);
-extern void GenSolve2(Problem *p,Matrix &x,double &y,double mx,int f);
+extern void GenSolve(Problem *p,Data &x,double &y,double mx,int f);
+extern void GenSolve2(Problem *p,Data &x,double &y,double mx,int f);
 # define __POPULATION__H
 # endif

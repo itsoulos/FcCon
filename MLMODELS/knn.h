@@ -5,16 +5,16 @@ typedef vector<int> IntVector;
 class KNN :public Model
 {
 	private:
-		void	sortArray(Matrix &x,vector<int> &index);
+        void        sortArray(Data &x,vector<int> &index);
 	public:
 		KNN(Mapper *m);
-		void	makeDistance(vector<Matrix> &testx,vector<Matrix> &distance);
-		void	loadTest(char *filename,vector<Matrix> &testx,Matrix &testy);
+        void        makeDistance(vector<Data> &testx,vector<Data> &distance);
+        void        loadTest(char *filename,vector<Data> &testx,Data &testy);
 		virtual double train1();
 		virtual double train2();
-		virtual double output(Matrix x);
-		virtual void   getDeriv(Matrix x,Matrix &g);
-		double	KNNtestError(vector<Matrix> &testx,Matrix &testy,vector<Matrix> &distance);
+        virtual double output(Data &x);
+        virtual void   getDeriv(Data &x,Data &g);
+        double	KNNtestError(vector<Data> &testx,Data &testy,vector<Data> &distance);
 		~KNN();
 };
 

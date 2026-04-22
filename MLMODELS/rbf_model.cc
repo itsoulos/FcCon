@@ -37,7 +37,7 @@ double Rbf::train1()
 	}
 	Output=new double[noutput * xpoint.size()];
 
-	Matrix xx;
+    Data xx;
 	xx.resize(original_dimension);
 	for(int i=0;i<xpoint.size();i++) 
 	{
@@ -135,7 +135,7 @@ double	Rbf::setWeightValuesFromPattern(double *pattern,int size)
 			weights[icount++]=pattern[2*i];
 	}
 
-	Matrix xx;
+    Data xx;
 	xx.resize(original_dimension);
 	for(int i=0;i<xpoint.size();i++) 
 	{
@@ -186,7 +186,7 @@ double Rbf::train2()
     return -v;//return train1();*/
 }
 
-double Rbf::output(Matrix x)
+double Rbf::output(Data &x)
 {
 	if(x.size()==0) return 1e+100;
 	int noutput=1;
@@ -210,7 +210,7 @@ double Rbf::output(Matrix x)
 #endif
 }
 
-void   Rbf::getDeriv(Matrix x,Matrix &g)
+void   Rbf::getDeriv(Data &x,Data &g)
 {
 }
 

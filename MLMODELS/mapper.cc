@@ -47,7 +47,7 @@ void	Mapper::setExpr(vector<string> s)
 }
 
 int haveX=0;
-int	Mapper::map(Matrix x,Matrix &x1)
+int	Mapper::map(Data &x,Data &x1)
 {
 	double *xx=new double[x.size()];
 	for(int i=0;i<x.size();i++) xx[i]=x[i];

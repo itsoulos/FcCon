@@ -325,7 +325,7 @@ GenSolver::~GenSolver()
 }
 
 
-void	GenSolve(Problem *p,Matrix &x,double &y,double mx,int flag)
+void	GenSolve(Problem *p,Data &x,double &y,double mx,int flag)
 {
 	const int genome_count =500;
 	const int max_generations =200;

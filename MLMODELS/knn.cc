@@ -117,17 +117,17 @@ double KNN::train2()
 	return train1();
 }
 
-double KNN::output(Matrix x)
+double KNN::output(Data &x)
 {
 }
 
-void   KNN::getDeriv(Matrix x,Matrix &g)
+void   KNN::getDeriv(Data &x,Data &g)
 {
 	/*	NOTHING TO DO
 	 * */
 }
 
-void	KNN::sortArray(Matrix &x,vector<int> &index)
+void	KNN::sortArray(Data &x,vector<int> &index)
 {
 	for(int i=0;i<x.size();i++)
 	{
@@ -145,7 +145,7 @@ void	KNN::sortArray(Matrix &x,vector<int> &index)
 }
 
 
-void	KNN::makeDistance(vector<Matrix> &testx,vector<Matrix> &distance)
+void    	KNN::makeDistance(vector<Data> &testx,vector<Data> &distance)
 {
 	distance.resize(testx.size());
 	
@@ -161,7 +161,7 @@ void	KNN::makeDistance(vector<Matrix> &testx,vector<Matrix> &distance)
 	}
 }
 
-void	KNN::loadTest(char *filename,vector<Matrix> &testx,Matrix &testy)
+void    	KNN::loadTest(char *filename,vector<Data> &testx,Data &testy)
 {
 	FILE *fp;
 	fp=fopen(filename,"r");
@@ -183,7 +183,7 @@ void	KNN::loadTest(char *filename,vector<Matrix> &testx,Matrix &testy)
 	testx.resize(count);
 	for(int i=0;i<count;i++) testx[i].resize(pattern_dimension);
 	testy.resize(count);
-	Matrix xx;
+    Data xx;
 	xx.resize(dim);
 	double sum = 0.0;
 	for(int i=0;i<count;i++)
@@ -195,7 +195,7 @@ void	KNN::loadTest(char *filename,vector<Matrix> &testx,Matrix &testy)
 	fclose(fp);
 }
 
-static void findKNN(int k,Matrix &distance,vector<int> &index)
+static void findKNN(int k,Data &distance,vector<int> &index)
 {
 	index.resize(k);
 	for(int i=0;i<k;i++) index[i]=-1;
@@ -221,7 +221,7 @@ static void findKNN(int k,Matrix &distance,vector<int> &index)
 	}	
 }
 
-double	KNN::KNNtestError(vector<Matrix> &testx,Matrix &testy,vector<Matrix> &distance)
+double	KNN::KNNtestError(vector<Data> &testx,Data &testy,vector<Data> &distance)
 {
 	int count=testx.size();
 	int dim;

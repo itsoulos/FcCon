@@ -11,8 +11,8 @@ class Rbf :public Model
 		double	setWeightValuesFromPattern(double *pattern,int size);
 		virtual double train1();
 		virtual double train2();
-		virtual double output(Matrix x);
-		virtual void   getDeriv(Matrix x,Matrix &g);
+        virtual double output(Data &x);
+        virtual void   getDeriv(Data &x,Data &g);
 		~Rbf();
 };
 

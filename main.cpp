@@ -44,7 +44,7 @@ void makeMainParams()
     mainParamList.addParam(Parameter("fc_trainfile","","Used train file"));
     mainParamList.addParam(Parameter("fc_testfile","","Used test file"));
     QStringList modelList;
-    modelList<<"rbf"<<"neural";
+    modelList<<"rbf"<<"neural"<<"airbf"<<"knn";
     mainParamList.addParam(Parameter("fc_model",modelList[0],modelList,"Used model for feature construction"));
     QStringList localList;
     localList<<"none"<<"crossover"<<"mutate"<<"de"<<"siman"<<"gd"<<"adam";
@@ -303,7 +303,18 @@ void run()
 {
     loadDataFiles();
     int total_runs = mainParamList.getParam("fc_iters").getValue().toInt();
-    int model_type = mainParamList.getParam("fc_model").getValue()=="rbf"?MODEL_RBF:MODEL_NEURAL;
+    int model_type =0;
+    if(mainParamList.getParam("fc_model").getValue()=="rbf")
+        model_type=MODEL_RBF;
+    else
+        if(mainParamList.getParam("fc_model").getValue()=="neural")
+        model_type=MODEL_NEURAL;
+    else
+        if(mainParamList.getParam("fc_model").getValue()=="knn")
+        model_type=MODEL_KNN;
+    else
+        if(mainParamList.getParam("fc_model").getValue()=="airbf")
+        model_type=MODEL_AIRBF;
     int pattern_dimension = mainParamList.getParam("fc_dimension").getValue().toInt();
     int pcount = mainParamList.getParam("fc_chromosomes").getValue().toInt();
     int length = mainParamList.getParam("fc_length").getValue().toInt();

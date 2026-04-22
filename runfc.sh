@@ -20,7 +20,7 @@ TRAINFILE=$DATAPATH/$DATAFILE.train
 ## The name of  input test file
 TESTFILE=$DATAPATH/$DATAFILE.test
 ## The model used for feature construction
-MODEL=rbf ##Values: rbf,neural
+MODEL=airbf ##Values: rbf,neural,airbf
 ## The local optimization procedure
 LOCAL=mutate ##Values: none,crossover,mutate,de,siman,gd,adam
 ## Enable or disable the balanced class fitness
@@ -29,4 +29,4 @@ BALANCECLASS=no
 ENABLESMOTE=no
 ## Enable or disable the usage of Geometric Mean
 ENABLEMEAN=no
-$PROGRAM --fc_iters=$ITERS --fc_generations=$GENS --fc_chromosomes=$COUNT --fc_length=$LENGTH --fc_dimension=$DIMENSION --fc_weights=$WEIGHTS --fc_trainfile=$TRAINFILE --fc_testfile=$TESTFILE --fc_local=$LOCAL --fc_balanceclass=$BALANCECLASS --fc_enablesmote=$ENABLESMOTE --fc_enablemean=$ENABLEMEAN
+$PROGRAM --fc_iters=$ITERS --fc_generations=$GENS --fc_chromosomes=$COUNT --fc_length=$LENGTH --fc_dimension=$DIMENSION --fc_weights=$WEIGHTS --fc_trainfile=$TRAINFILE --fc_testfile=$TESTFILE --fc_local=$LOCAL --fc_balanceclass=$BALANCECLASS --fc_enablesmote=$ENABLESMOTE --fc_enablemean=$ENABLEMEAN --fc_model=$MODEL

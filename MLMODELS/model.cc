@@ -6,7 +6,7 @@
 
 //# define SCALEFACTOR
 
-Matrix xmin,xmax,xmean,xstd,xcurrent;
+Data xmin,xmax,xmean,xstd,xcurrent;
 
 double Model::distance(const std::vector<double>& a, const std::vector<double>& b) {
     double sum = 0.0;
@@ -158,7 +158,7 @@ Model::Model(Mapper *m)
 	isvalidation=0;
 }
 
-Matrix	Model::getWeights()
+Data    	Model::getWeights()
 {
 	return weight;
 }
@@ -175,14 +175,14 @@ int	Model::getNumPatterns() const
 	return ypoint.size();
 }
 
-void	Model::randomizeWeights()
+void        Model::randomizeWeights()
 {
 	weight.resize((pattern_dimension+2)*num_weights);
 	setDimension(weight.size());
 	for(int i=0;i<weight.size();i++) weight[i]=0.1*(2.0*drand48()-1.0);
 }
 
-void	Model::setPatternDimension(int d)
+void    	Model::setPatternDimension(int d)
 {
 	if(pattern_dimension!=d)
 	{
@@ -280,7 +280,7 @@ void 	Model::readPatterns(char *filename)
         enableSmote();
 }
 
-void	Model::transform(Matrix x,Matrix &x1)
+void    	Model::transform(Data x,Data &x1)
 {
 	for(int  i=0;i<x.size();i++) 
 	//x1[i]=sig(x[i]);
@@ -294,7 +294,7 @@ void	Model::setNumOfWeights(int w)
 	num_weights = w;
 }
 
-Matrix	Model::getXpoint(int pos)
+Data    	Model::getXpoint(int pos)
 {
 	return xpoint[pos];
 }
@@ -326,7 +326,7 @@ double	Model::valError()
 	return s;
 }
 
-double  Model::getAverageClassError(Matrix &x)
+double  Model::getAverageClassError(Data &x)
 {
     if(weight.size()!=x.size()) weight.resize(x.size());
     for(int i=0;i<x.size();i++) weight[i] = x[i];
@@ -359,7 +359,7 @@ double  Model::getAverageClassError(Matrix &x)
     return sum/dclass.size();
 }
 
-double	Model::funmin(Matrix x)
+double	Model::funmin(Data &x)
 {
     extern bool fc_balanceclass;
     extern bool fc_enablemean;
@@ -415,7 +415,7 @@ double	Model::funmin(Matrix x)
 	return s;
 }
 
-void  Model::granal(Matrix x,Matrix &g)
+void  Model::granal(Data &x,Data &g)
 {
 	if(weight.size()!=x.size())
 	weight.resize(x.size());
@@ -425,7 +425,7 @@ void  Model::granal(Matrix x,Matrix &g)
 		g[i]=0.0;
 	}
 	double s=0.0;
-	Matrix gtemp;
+    Data gtemp;
 	gtemp.resize(g.size());
 	int end=xpoint.size();
 	if(isvalidation) end=4*xpoint.size()/5;
@@ -479,10 +479,10 @@ void	Model::print(char *train,char *itest, char *otest)
 	int d,count;
 	fscanf(fin,"%d",&d);
 	fscanf(fin,"%d",&count);
-	Matrix testx;
+    Data testx;
 	testx.resize(d);
 	double testy;
-	Matrix xx;
+    Data xx;
 	xx.resize(pattern_dimension);
 	fprintf(fout,"%d\n%d\n",pattern_dimension,count);
 	for(int i=0;i<count;i++)
@@ -502,7 +502,7 @@ void	Model::print(char *train,char *itest, char *otest)
 double	Model::testError(char *filename)
 {
 	double testy;
-	Matrix testx;
+    Data testx;
 	int count;
 	int dim;
 	FILE *fp;
@@ -521,10 +521,10 @@ double	Model::testError(char *filename)
 		return -1.0;
 	}
 	testx.resize(pattern_dimension);
-	Matrix xx;
+    Data xx;
 	xx.resize(dim);
 	double sum = 0.0;
-	Matrix xx2;
+    Data xx2;
 	xx2.resize(dim);
 	for(int i=0;i<count;i++)
 	{
@@ -542,7 +542,7 @@ double	Model::testError(char *filename)
 double	Model::classTestError(char *filename,double &precision,double &recall)
 {
 	vector<double> classes;
-	Matrix testx;
+    Data testx;
 	double testy;
 	int count;
 	int dim;
@@ -595,10 +595,10 @@ double	Model::classTestError(char *filename,double &precision,double &recall)
 	fscanf(Fp,"%d",&dim);
 	fscanf(Fp,"%d",&count);
 	testx.resize(pattern_dimension);
-	Matrix xx;
+    Data xx;
 	xx.resize(dim);
 	double sum = 0.0;
-	Matrix xx2;
+    Data xx2;
 	xx2.resize(dim);
 	int count1=0,count2=0,est1=0,est2=0;
 	for(int i=0;i<count;i++)
@@ -649,7 +649,7 @@ double	Model::classTestError(char *filename,double &precision,double &recall)
 }
 
 
-void	Model::printConfusionMatrix(
+void        Model::printConfusionMatrix(
                                  vector<double> &dclass,
                                  vector<double> &T,vector<double> &O,
                                  vector<double> &precision,
@@ -832,7 +832,7 @@ void    Model::getPrecisionRecall(
 
 }
 
-void	Model::enableValidation()
+void        Model::enableValidation()
 {
 	isvalidation=1;
 }

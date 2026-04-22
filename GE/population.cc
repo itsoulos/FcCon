@@ -385,7 +385,7 @@ class PopulationProblem: public Problem
 	}
 
  double dmax(double a,double b){return a>b?a:b;}
-	virtual double funmin(Matrix x)
+    virtual double funmin(Data &x)
 	{
 		for(int i=0;i<x.size();i++) {
 			currentGenome[i]=(int)x[i];
@@ -395,7 +395,7 @@ class PopulationProblem: public Problem
 		return f;
 		
 	}
-	virtual void	granal(Matrix x,Matrix &g)
+    virtual void        granal(Data &x,Data &g)
 	{
 		for(int i=0;i<x.size();i++)
 		{
@@ -561,7 +561,7 @@ void	Population::crossItem(int pos)
 	vector<int> g;
 	g.resize(genome_size);
 	for(int i=0;i<genome_size;i++) g[i]=genome[pos][i];
-	printf("CROSS[%d]=",pos);
+    //printf("CROSS[%d]=",pos);
 	fflush(stdout);
 	for(int iters=1;iters<=100;iters++)
 	{
@@ -575,8 +575,8 @@ void	Population::crossItem(int pos)
         if(fabs(f)>1e+10) goto again;
 		if(fabs(f)<fabs(fitness_array[pos]))
 		{
-			printf("%lf ",f);
-			fflush(stdout);
+            //printf("%lf ",f);
+            //fflush(stdout);
 			for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
 			fitness_array[pos]=f;
 		}
@@ -587,8 +587,8 @@ void	Population::crossItem(int pos)
 			double f=fitness(g);
 			if(fabs(f)<fabs(fitness_array[pos]))
 			{
-			printf("%lf ",f);
-			fflush(stdout);
+            //printf("%lf ",f);
+            //fflush(stdout);
 				for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
 				fitness_array[pos]=f;
 			}

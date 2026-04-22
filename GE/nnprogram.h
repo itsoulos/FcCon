@@ -6,12 +6,14 @@
 # include <MLMODELS/rbf_model.h>
 # include <MLMODELS/knn.h>
 # include <MLMODELS/mapper.h>
+# include <MLMODELS/airbf.h>
 # include <vector>
 using namespace std;
 
-# define MODEL_NEURAL		1
+# define MODEL_NEURAL	1
 # define MODEL_RBF		2
 # define MODEL_KNN		3
+# define MODEL_AIRBF    4
 
 class NNprogram	:public Program
 {

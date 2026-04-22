@@ -4,7 +4,7 @@
 # include <math.h>
 
 
-static double sum2(Matrix x)
+static double sum2(Data x)
 {
 	double s=0.0;
 	for(int i=0;i<x.size();i++) s+=x[i]*x[i];
@@ -36,7 +36,7 @@ void	Problem::setDimension(int d)
 /*	02-11-03
  *	Καθορίζει τα όρια του προβλήματος.
  * */
-void	Problem::setMargin(Matrix x1,Matrix x2)
+void        Problem::setMargin(Data x1,Data x2)
 {
 	lmargin = x1;
 	rmargin = x2;
@@ -46,7 +46,7 @@ void	Problem::setMargin(Matrix x1,Matrix x2)
 /*	02-11-03
  *	Καθορίζει το αριστερό όριο του προβλήματος.
  * */
-void	Problem::setLeftMargin(Matrix x1)
+void        Problem::setLeftMargin(Data x1)
 {
 	lmargin = x1;
 	has_margins|= MARGINS_LEFT;
@@ -55,7 +55,7 @@ void	Problem::setLeftMargin(Matrix x1)
 /*	02-11-03
  *	Καθορίζει το δεξιό άκρο του προβλήματος.
  * */
-void	Problem::setRightMargin(Matrix x2)
+void    	Problem::setRightMargin(Data x2)
 {
 	rmargin = x2;
 	has_margins|= MARGINS_RIGHT;
@@ -72,7 +72,7 @@ int	Problem::getDimension() const
 /*	02-11-03
  *	Επιστρέφει το αριστερό όριο του προβλήματος.
  * */
-void	Problem::getLeftMargin(Matrix &x1)
+void    	Problem::getLeftMargin(Data &x1)
 {
 	x1 = lmargin;
 }
@@ -80,12 +80,12 @@ void	Problem::getLeftMargin(Matrix &x1)
 /*	02-11-03
  *	Επιστρέφει το δεξιό όριο του προβλήματος.
  * */
-void	Problem::getRightMargin(Matrix &x2)
+void    	Problem::getRightMargin(Data &x2)
 {
 	x2 = rmargin;
 }
 
-double	Problem::funmin(Matrix x)
+double	Problem::funmin(Data &x)
 {
 	printf("Enter default funmin \n");
 	return 0.0;
@@ -94,7 +94,7 @@ double	Problem::funmin(Matrix x)
 /*	02-11-03
  *	Επιστρέφει την αντικειμενική συνάρτηση του προβλήματος.
  * */
-FUNCTION	Problem::getFunmin()
+FUNCTION        Problem::getFunmin()
 {
 	return &Problem::funmin;
 }
@@ -102,7 +102,7 @@ FUNCTION	Problem::getFunmin()
 /*	02-11-03
  *	Επιστρέφει την αντικειμενική παράγωγο του προβλήματος.
  * */
-GRADIENT	Problem::getGranal()
+GRADIENT        Problem::getGranal()
 {
 	return &Problem::granal;
 }
@@ -111,7 +111,7 @@ GRADIENT	Problem::getGranal()
  *	Επιστρέφει 1 αν το δοθέν σημεία είναι εντός των 
  *	ορίων του προβλήματος.
  * */
-int	Problem::isPointIn(Matrix x)
+int	Problem::isPointIn(Data &x)
 {
 	if(!has_margins) return 1;
 	for(int i=0;i<dimension;i++)
@@ -124,7 +124,7 @@ int	Problem::isPointIn(Matrix x)
  *	Οι μέθοδοι καθολικής ελαχιστοποιήσεως πρέπει να 
  *	χρησιμοποιούν αυτήν την συνάρτηση.
  * */
-void	Problem::getSample(Matrix &x)
+void        Problem::getSample(Data &x)
 {
 	if(has_margins==(MARGINS_LEFT|MARGINS_RIGHT))
 	{
@@ -138,11 +138,11 @@ void	Problem::getSample(Matrix &x)
 	}
 }
 
-void	Problem::getSample(Matrix &x1,double rc,Matrix &x)
+void        Problem::getSample(Data &x1,double rc,Data &x)
 {
 	int s=x1.size();
 
-	Matrix ksi;
+    Data ksi;
 	ksi.resize(s);
 	double nrm=0.0;
 	for(int i=0;i<s;i++)
@@ -169,7 +169,7 @@ int	Problem::hasMargins()
  *	Επιστρέφει το ελάχιστο βήμα l για την line search, 
  *	έτσι ώστε το x+l*p να είναι εντός των ορίων.
  * */
-double	Problem::getLsStep(Matrix x,Matrix p)
+double	Problem::getLsStep(Data x,Data p)
 {
 	double stepcb=1;
 	for(int i=0;i<x.size();i++)
@@ -202,7 +202,7 @@ static double dmin(double a,double b)
  *	Φράσσει το σημείο x εντός των ορίων
  *	του προβλήματος.
  * */
-void	Problem::bound(Matrix &x)
+void        Problem::bound(Data &x)
 {
 	if(has_margins==(MARGINS_LEFT|MARGINS_RIGHT))
 	{
@@ -219,7 +219,7 @@ void	Problem::bound(Matrix &x)
  *	Είναι η αντικειμενική παράγωγος του προβλήματος.
  *	Αν δεν επανοριστεί υπολογίζεται με αριθμητικό τρόπο.
  * */
-void	Problem::granal(Matrix x,Matrix &g)
+void        Problem::granal(Data &x,Data &g)
 {
 	const double eps=1e-6;
 	for(int i=0;i<g.size();i++) g[i]=0.0;
@@ -237,7 +237,7 @@ void	Problem::granal(Matrix x,Matrix &g)
 /*	02-11-03
  *	Υπολογίζει το REDUCED RMS.
  * */
-double	Problem::getGRMS(Matrix x,Matrix g)
+double	Problem::getGRMS(Data x,Data g)
 {
 	double s=0.0;
 	for(int i=0;i<dimension;i++)
@@ -250,7 +250,7 @@ double	Problem::getGRMS(Matrix x,Matrix g)
 	return sqrt(1.0/dimension * s);
 }
 
-void	Problem::getSample(double *x)
+void    	Problem::getSample(double *x)
 {
 	if(has_margins==(MARGINS_LEFT|MARGINS_RIGHT))
 	{
@@ -269,7 +269,7 @@ void	Problem::getSample(double *x)
  *	Είναι εφαρμόσιμη μόνον στις πρώτες δύο διαστάσεις 
  *	του προβλήματος.
  * */
-void	Problem::plot()
+void    	Problem::plot()
 {
 	/*
 	if(dimension<2) return;
@@ -308,7 +308,7 @@ void	Problem::plot()
 }
 
 
-void	Problem::plot(char *filename)
+void        Problem::plot(char *filename)
 {
 	/*
 	if(dimension<2) return;
@@ -363,12 +363,12 @@ double	Problem::getLogVolume()
 	return prd;
 }
 
-double	Problem::getGradientCriterion(Matrix x1,Matrix x2)
+double	Problem::getGradientCriterion(Data x1,Data x2)
 {
 	double s=0;
-	Matrix g1;
+    Data g1;
 	g1.resize(x1.size());
-	Matrix g2;
+    Data g2;
 	g2.resize(x2.size());
 	granal(x1,g1);
 	granal(x2,g2);

@@ -12,11 +12,11 @@
 #include <algorithm>
 #include <random>
 #include <map>
-extern Matrix		xmax;
-extern Matrix		xmin;
-extern Matrix		xmean;
-extern Matrix		xstd;
-extern Matrix		xcurrent;
+extern Data		xmax;
+extern Data		xmin;
+extern Data		xmean;
+extern Data		xstd;
+extern Data		xcurrent;
 
 struct Sample {
     std::vector<double> features;
@@ -26,29 +26,29 @@ class Model :public Problem
 {
 	protected:
         int             isvalidation;
-        Matrix          weight;
+        Data          weight;
         int             num_weights;
         int             pattern_dimension;
         int             original_dimension;
-		vector<Matrix> 	origx;
-        Matrix          origy;
-		vector<Matrix> 	xpoint;
-        Matrix          ypoint;
-        Matrix          dclass;
+        vector<Data> 	origx;
+        Data          origy;
+        vector<Data> 	xpoint;
+        Data          ypoint;
+        Data          dclass;
 	public:
 
 		Mapper	*mapper;
 		Model(Mapper *m);
-		void	setPatternDimension(int d);
-		void	setNumOfWeights(int w);
+        void        setPatternDimension(int d);
+        void        setNumOfWeights(int w);
 		void 	readPatterns(char *filename);
-		void	replacePattern(int pos,Matrix x,double y);
+        void        replacePattern(int pos,Data x,double y);
         int     getPatternDimension() const;
         int     getOriginalDimension() const;
         int     getNumOfWeights() const;
         int     getNumPatterns() const;
-		Matrix	getWeights();
-		Matrix	getXpoint(int pos);
+        Data    	getWeights();
+        Data    	getXpoint(int pos);
 		double  getYPoint(int pos);
 		double  getModelAtPoint(int pos);
 		/*	BASIKH SHMEIOSI
@@ -57,19 +57,19 @@ class Model :public Problem
 		 * */
 		virtual	double 	train1()=0;
 		virtual double	train2()=0;
-		virtual double	output(Matrix x)=0;
-		virtual void	getDeriv(Matrix x,Matrix &g)=0;
+        virtual double	output(Data &x)=0;
+        virtual void        getDeriv(Data  &x,Data &g)=0;
 		
-		virtual double	funmin(Matrix x);
-		virtual void    granal(Matrix x,Matrix &g);
-		void	transform(Matrix x,Matrix &xx);
+        virtual double	funmin(Data &x);
+        virtual void    granal(Data &x,Data &g);
+        void        transform(Data x,Data &xx);
 		double  valError();
-		void	enableValidation();
+        void        enableValidation();
 		double	testError(char *filename);
 		double	classTestError(char *filename,double &precision,double &recall);
-		void	print(char *train,char *itest,char *otest);
-		void	randomizeWeights();
-        void	printConfusionMatrix(vector<double> &dclass,
+        void    	print(char *train,char *itest,char *otest);
+        void    	randomizeWeights();
+        void    	printConfusionMatrix(vector<double> &dclass,
                                         vector<double> &T,vector<double> &O,
                                          vector<double> &precision,
                                          vector<double> &recall);
@@ -89,7 +89,7 @@ class Model :public Problem
             int k = 5
             );
         void    enableSmote();
-        double  getAverageClassError(Matrix &x);
+        double  getAverageClassError(Data &x);
 		~Model();
 };
 

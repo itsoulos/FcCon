@@ -2096,7 +2096,7 @@ extern int getmin_(integer *n, integer *m, integer *meq, double
 	MinInfo &Info);
 
 double oldmin=1e+10;
-double tolmin(Matrix &x,MinInfo &Info)
+double tolmin(Data &x,MinInfo &Info)
 {
 	oldViol=1e+100;
 	double fmin;
@@ -2111,7 +2111,7 @@ double tolmin(Matrix &x,MinInfo &Info)
 	double xl[n];
 	double xu[n];
 	double *xp=new double[n];
-	Matrix x1,x2;
+    Data x1,x2;
 	x1.resize(Info.p->getDimension());
 	x2.resize(Info.p->getDimension());
 	Info.p->getLeftMargin(x1);
@@ -2162,8 +2162,8 @@ int fgcalc_(long *n,double *x,double *f,double *g,
 	totcal_1.itnocs++;
 	info.fevals++;
 	info.gevals++;
-	Matrix Xa;
-	Matrix Ga;
+    Data Xa;
+    Data Ga;
 	Ga.resize(*n);
 	Xa.resize(*n);
 	for(int i=0;i<*n;i++) Xa[i]=x[i];

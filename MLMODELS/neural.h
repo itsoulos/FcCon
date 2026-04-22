@@ -8,9 +8,9 @@ class Neural :public Model
 		double	countViolate(double limit);
 		virtual double train1();
 		virtual double train2();
-		virtual double output(Matrix x);
-		virtual void   getDeriv(Matrix x,Matrix &g);
-		void	setWeights(Matrix x);
+        virtual double output(Data &x);
+        virtual void   getDeriv(Data &x,Data &g);
+        void	 setWeights(Data x);
 		~Neural();
 };
 
