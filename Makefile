@@ -561,7 +561,8 @@ nnprogram.o: GE/nnprogram.cc GE/nnprogram.h \
 		MLMODELS/Rbf.h \
 		MLMODELS/matrix_functions.h \
 		MLMODELS/kmeans.h \
-		MLMODELS/knn.h
+		MLMODELS/knn.h \
+		MLMODELS/airbf.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o nnprogram.o GE/nnprogram.cc
 
 population.o: GE/population.cc GE/population.h \
@@ -585,6 +586,7 @@ population.o: GE/population.cc GE/population.h \
 		MLMODELS/matrix_functions.h \
 		MLMODELS/kmeans.h \
 		MLMODELS/knn.h \
+		MLMODELS/airbf.h \
 		GE/integeranneal.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o population.o GE/population.cc
 
@@ -720,7 +722,8 @@ main.o: main.cpp CORE/parameterlist.h \
 		MLMODELS/Rbf.h \
 		MLMODELS/matrix_functions.h \
 		MLMODELS/kmeans.h \
-		MLMODELS/knn.h
+		MLMODELS/knn.h \
+		MLMODELS/airbf.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 ####### Install

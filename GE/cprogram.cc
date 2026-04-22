@@ -358,15 +358,15 @@ void	Cprogram::makeRules()
 
 	r=newRule();
 	rule[r]->addSymbol(&Digit0);
-	//rule[r]->addSymbol(&Digit0);
-	rule[r]->addSymbol(&DigitList);
+    rule[r]->addSymbol(&Digit0);
+    //rule[r]->addSymbol(&DigitList);
 	DigitList.addRule(rule[r]);
 
 	r=newRule();
 	rule[r]->addSymbol(&Digit0);
 	rule[r]->addSymbol(&Digit0);
 	rule[r]->addSymbol(&Digit0);
-	//DigitList.addRule(rule[r]);
+    DigitList.addRule(rule[r]);
 
 	r=newRule();
 	rule[r]->addSymbol(&DigitList);

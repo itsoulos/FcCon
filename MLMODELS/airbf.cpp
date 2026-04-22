@@ -33,9 +33,13 @@ double  AiRbf::train1()
     }
     train(X,y);
     weight.resize(k);
-    for(int i=0;i<k;i++)
-        weight[i]=weights(i);
-    return funmin(weight);
+    MatrixXd Phi = computePhi(X);
+    VectorXd preds= Phi * weights;
+    double sum = 0.0;
+    for (int i = 0; i < preds.size(); i++) {
+        sum+=pow(preds(i)-y(i),2.0);
+    }
+    return sum;
 }
 
 double  AiRbf::train2()

@@ -296,9 +296,8 @@ void        Population::nextGeneration()
     	}
 	
 	crossItem(0);
-	for(int i=0;i<genome_count;i++)
-		if(rand()*1.0/RAND_MAX<=0.05)
-			crossItem(i);
+    for(int i=0;i<4;i++)
+        crossItem(rand() % genome_count);
 	select();
 	crossover();
 	if(generation) mutate();
@@ -556,12 +555,12 @@ void    Population::setLocalMethod(string s)
     localMethod = s;
 }
 
-void	Population::crossItem(int pos)
+void        Population::crossItem(int pos)
 {
 	vector<int> g;
 	g.resize(genome_size);
 	for(int i=0;i<genome_size;i++) g[i]=genome[pos][i];
-    //printf("CROSS[%d]=",pos);
+    printf("CROSS[%d]=",pos);
 	fflush(stdout);
 	for(int iters=1;iters<=100;iters++)
 	{
@@ -575,8 +574,8 @@ void	Population::crossItem(int pos)
         if(fabs(f)>1e+10) goto again;
 		if(fabs(f)<fabs(fitness_array[pos]))
 		{
-            //printf("%lf ",f);
-            //fflush(stdout);
+            printf("%lf ",f);
+            fflush(stdout);
 			for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
 			fitness_array[pos]=f;
 		}
@@ -587,13 +586,14 @@ void	Population::crossItem(int pos)
 			double f=fitness(g);
 			if(fabs(f)<fabs(fitness_array[pos]))
 			{
-            //printf("%lf ",f);
-            //fflush(stdout);
+            printf("%lf ",f);
+            fflush(stdout);
 				for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
 				fitness_array[pos]=f;
 			}
 		}
 	}
+        printf("\n");
 }
 
 void	Population::mutateItem(int pos)
