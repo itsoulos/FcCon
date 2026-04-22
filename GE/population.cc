@@ -286,27 +286,20 @@ void        Population::nextGeneration()
 {
 	calcFitnessArray();
 
-	
-    const int mod=50;
-    const int count=0;
-	
-
 	select();
-    if((generation+1)%20==0) 
-    {
+    	if((generation+1)%50==0) 
+    	{
 	    localSearch(0);
-	    localSearch(rand()%genome_count);
-	    localSearch(rand()%genome_count);
-	    localSearch(rand()%genome_count);
+	    for(int i=0;i<4;i++)
 	    localSearch(rand()%genome_count);
 	    select();
-    }
-    if((generation+1) % mod==0)
-    {
-        for(int i=0;i<count;i++)
-            localSearch(rand()%genome_count);
-        select();
-    }
+    	}
+	
+	crossItem(0);
+	for(int i=0;i<genome_count;i++)
+		if(rand()*1.0/RAND_MAX<=0.05)
+			crossItem(i);
+	select();
 	crossover();
 	if(generation) mutate();
 	++generation;
@@ -563,14 +556,13 @@ void    Population::setLocalMethod(string s)
     localMethod = s;
 }
 
-void        Population::localSearch(int pos)
+void	Population::crossItem(int pos)
 {
 	vector<int> g;
 	g.resize(genome_size);
 	for(int i=0;i<genome_size;i++) g[i]=genome[pos][i];
-
-    if(localMethod == "crossover")
-    {
+	printf("CROSS[%d]=",pos);
+	fflush(stdout);
 	for(int iters=1;iters<=100;iters++)
 	{
             int gpos,cutpoint;
@@ -583,7 +575,8 @@ void        Population::localSearch(int pos)
         if(fabs(f)>1e+10) goto again;
 		if(fabs(f)<fabs(fitness_array[pos]))
 		{
-            printf("CROSSOVER. NEW MIN[%4d]=%10.4lg\n",pos,f);
+			printf("%lf ",f);
+			fflush(stdout);
 			for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
 			fitness_array[pos]=f;
 		}
@@ -594,54 +587,74 @@ void        Population::localSearch(int pos)
 			double f=fitness(g);
 			if(fabs(f)<fabs(fitness_array[pos]))
 			{
-            printf("CROSSOVER. NEW MIN[%4d]=%10.4lg\n",pos,f);
+			printf("%lf ",f);
+			fflush(stdout);
 				for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
 				fitness_array[pos]=f;
 			}
 		}
 	}
+}
+
+void	Population::mutateItem(int pos)
+{
+	vector<int> g;
+	g.resize(genome_size);
+	for(int i=0;i<genome_size;i++) g[i]=genome[pos][i];
+    printf("LOCAL[%d] = ",pos);
+    fflush(stdout);
+	for(int j=0;j<10;j++)
+       for(int i=0;i<genome_size;i++)
+       {
+                {
+                        int ik=0;
+                        double f;
+                        do
+                        {
+                                g[i]=rand() % MAX_RULE;
+                                ik++;
+                                if(ik==10) break;
+                                f=fitness(g);
+                        }while(f<=fitness_array[pos]);
+                        if(ik!=10)
+                        {
+                                fitness_array[pos]=f;
+				printf(" %lf ",f);
+				
+				fflush(stdout);
+                                genome[pos][i]=g[i];
+                        }
+                        else g[i]=genome[pos][i];
+                }
+        }
+	printf("\n");
+}
+
+void        Population::localSearch(int pos)
+{
+	vector<int> g;
+	g.resize(genome_size);
+	for(int i=0;i<genome_size;i++) g[i]=genome[pos][i];
+
+    if(localMethod == "crossover")
+    {
+	    crossItem(pos);
     }
     else
     if(localMethod == "mutate")
     {
-	for(int i=0;i<genome_size;i++)
-	{
-            int ipos;
-
-        ipos = rand() % genome_size;
-		for(int k=0;k<20;k++)
-		{
-            int old_value,range,direction,delta,new_value;
-             againmutate:
-         old_value = genome[pos][ipos];
-         range = 20;
-         direction = rand()%2==1?1:-1;
-         delta = rand() % range;
-         new_value = old_value+direction*delta;
-		if(new_value<0) new_value=old_value-direction*delta;
-            	genome[pos][ipos]=new_value;
-		for(int j=0;j<genome_size;j++) g[j]=genome[pos][j];
-		double trial_fitness=fitness(g);
-
-		if(fabs(trial_fitness)<fabs(fitness_array[pos]))
-		{
-			fitness_array[pos]=trial_fitness;
-            printf("MUTATE. NEW BEST VALUE[%4d] = %20.10lg \n",pos,fitness_array[pos]);
-			return;
-		}
-        else 	genome[pos][ipos]=old_value;
-		}
-	}
+	    mutateItem(pos);
     }
     else
     if(localMethod == "siman")
     {
             double f = fitness_array[pos];
-            //IntegerAnneal lt(program);
-            //lt.setPoint(g,fitness_array[pos]);
-            //lt.Solve();
-            //lt.getPoint(g,fitness_array[pos]);
-            g=simulatedAnnealing(g);
+            IntegerAnneal lt(program);
+            lt.setPoint(g,fitness_array[pos]);
+            lt.Solve();
+            lt.getPoint(g,fitness_array[pos]);
+            //g=simulatedAnnealing(g);
+         	g=integerAdam(g);
             fitness_array[pos]=fitness(g);
             for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
 

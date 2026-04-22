@@ -61,6 +61,8 @@ class Population
             double alpha = 0.95,
             int iterPerTemp = 20
             );
+	void crossItem(int pos);
+	void mutateItem(int pos);
 		~Population();
 		
 };

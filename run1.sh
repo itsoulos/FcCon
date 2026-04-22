@@ -1,6 +1,6 @@
-BASEPATH=~/Desktop/ERGASIES/FeatureConstruction2/
-PROGRAM=./FcCon
-DATAPATH=$BASEPATH/datasets/tenfolding/
+BASEPATH=~/TEST/FcCon/
+PROGRAM=$BASEPATH/FcCon
+DATAPATH=~/Desktop/ERGASIES/FeatureConstruction2/datasets/tenfolding/
 ## Number of iterations
 ITERS=1
 ## Number of allowed generations
@@ -22,7 +22,7 @@ TESTFILE=$DATAPATH/$DATAFILE.test
 ## The model used for feature construction
 MODEL=rbf ##Values: rbf,neural
 ## The local optimization procedure
-LOCAL=mutate ##Values: none,crossover,mutate,de,siman,gd,adam
+LOCAL=adam ##Values: none,crossover,mutate,de,siman,gd,adam
 ## Enable or disable the balanced class fitness
 BALANCECLASS=no
 ## Enable or disable the usage of SMOTE

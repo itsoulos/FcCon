@@ -4,7 +4,7 @@
 IntegerAnneal::IntegerAnneal(Program *pr)
 {
     T0=100.0;
-    neps=200;
+    neps=50;
     myProblem = pr;
 }
 void    IntegerAnneal::setNeps(int n)
