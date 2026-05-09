@@ -106,21 +106,32 @@ void    Model::enableSmote()
         data[i].label=origy[i];
     }
 
+    int d = origx[0].size();
     vector<Sample> data2=applySMOTE(data,5);
     origx.clear();
     origy.clear();
+
     count = data2.size();
     origx.resize(count);
     origy.resize(count);
     xpoint.resize(count);
     ypoint.resize(count);
 
+	FILE *fp=fopen("smote.train","w");
+	fprintf(fp,"%d\n",d);
+	fprintf(fp,"%d\n",count);
     for(int i=0;i<count;i++)
     {
         origx[i]=data2[i].features;
+	for(int j=0;j<origx[i].size();j++)
+	{
+		fprintf(fp,"%lf ",origx[i][j]);
+	}
 	origy[i]=data2[i].label;
+	fprintf(fp,"%lf\n",origy[i]);
 	ypoint[i]=data2[i].label;
     }
+	fclose(fp);
 }
 
 static int nearestClassIndex(vector<double> &dclass,double value)
