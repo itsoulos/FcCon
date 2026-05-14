@@ -21,7 +21,7 @@ Mapper::Mapper(int d)
 	}	
 }
 
-void	Mapper::setExpr(vector<string> s)
+void    	Mapper::setExpr(vector<string> s)
 {
 	if(parser.size()!=s.size()) 
 	{
@@ -52,11 +52,9 @@ int	Mapper::map(Data &x,Data &x1)
 	double *xx=new double[x.size()];
 	for(int i=0;i<x.size();i++) xx[i]=x[i];
 	int countX=0;
-	extern vector<double> xcurrent;
 	for(int i=0;i<parser.size();i++) 
 	{
 		haveX=0;
-		xcurrent = x;
 		x1[i]=parser[i]->Eval(xx);
 		countX+=haveX==0;
 		//if(!haveX) {delete[] xx;return 0;}

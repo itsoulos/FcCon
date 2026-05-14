@@ -1,13 +1,10 @@
 # include <GE/nnprogram.h>
-NNprogram::NNprogram(int type,int pdimension,char *filename)
+NNprogram::NNprogram(int type,int pdimension,
+                     Dataset *train,Dataset *test)
 {
-	FILE *fp=fopen(filename,"r");
-	if(!fp) return;
-	int d;
-	fscanf(fp,"%d",&d);
+    int d = train->dimension();
 	mapper=new Mapper(d);
-	fclose(fp);	
-	model_type = type;
+    model_type = type;
 	if(type == MODEL_NEURAL)
 		model = new Neural(mapper);
 	else
@@ -21,7 +18,9 @@ NNprogram::NNprogram(int type,int pdimension,char *filename)
 	pattern_dimension = pdimension;
 	program = new Cprogram(d,pdimension);
 	setStartSymbol(program->getStartSymbol());
-	model->readPatterns(filename);
+    model->setTrainSet(train);
+    model->setTestSet(test);
+    model->setPatternDimension(pdimension);
 	pstring.resize(pattern_dimension);
 	pgenome.resize(0);
 }

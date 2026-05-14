@@ -30,10 +30,9 @@ double KNN::train1()
 
 	vector<double> classes;
 	double v;
+    if(!mapTrainSet()) return 1e+100;
 	for(int i=0;i<xpoint.size();i++) 
-	{
-		int d=mapper->map(origx[i],xpoint[i]);
-		if(!d) return 1e+100;
+    {
 		int found=0;
 		for(int j=0;j<classes.size();j++)
 		{

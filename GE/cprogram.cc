@@ -4,7 +4,6 @@
 # include <stdio.h>
 # include <math.h>
 
-extern vector<double> xmin,xmax,xmean,xstd,xcurrent;
 
 double sig(const double *x)
 {
@@ -12,71 +11,10 @@ double sig(const double *x)
 	return 1.0/(1.0+exp(-x[0]));
 }
 
-double	MMax(const double *x)
-{
-	double fmax=xcurrent[0];
-	for(int i=0;i<xcurrent.size();i++)
-		if(xcurrent[i]>fmax) fmax=xcurrent[i];
-	return fmax;
-
-	int n=(int)(fabs(x[0]));
-	return xmax[n % xmin.size()];
-}
-
-double	MMin(const double *x)
-{
-	/*
-	double fmin=xcurrent[0];
-	for(int i=0;i<xcurrent.size();i++)
-		if(xcurrent[i]<fmin) fmin=xcurrent[i];
-	return fmin;
-	*/
-	double s=0.0;
-	for(int i=0;i<xcurrent.size();i++) s=s+fabs(xcurrent[i]);
-	return s;
-
-	int n=(int)(fabs(x[0]));
-	return xmin[n % xmin.size()];
-}
-
-double	MAvg(const double *x)
-{
-	/*
-	double s=0.0;
-	for(int i=0;i<xcurrent.size();i++) s+=xcurrent[i];
-	return s/xcurrent.size();
-	*/
-	double s=0.0;
-	for(int i=0;i<xcurrent.size();i++) s=s+xcurrent[i]*xcurrent[i];
-	return sqrt(s/xcurrent.size());
-
-
-	int n=(int)(fabs(x[0]));
-	return xmean[n % xmin.size()];
-}
-
-double	MStd(const double *x)
-{
-	double s=0.0;
-	double s2=0.0;
-	for(int i=0;i<xcurrent.size();i++) 
-	{
-		s+=xcurrent[i];
-		s2+=xcurrent[i]*xcurrent[i];
-	}
-	return sqrt(fabs(s2/xcurrent.size()-s/xcurrent.size() * s/xcurrent.size()));
-
-	int n=(int)(fabs(x[0]));
-	return xstd[n % xmin.size()];
-}
 
 Cprogram::Cprogram(int dim,int pdim)
 {
 	parser.AddFunction("sig",sig,1);
-	parser.AddFunction("xmin",MMin,1);
-	parser.AddFunction("xmax",MMax,1);
-	parser.AddFunction("xmean",MAvg,1);
-	parser.AddFunction("xstd",MStd,1);
 
 	dimension = dim;
 	pdimension = pdim;

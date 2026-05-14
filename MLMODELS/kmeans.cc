@@ -21,7 +21,7 @@ using namespace std;
 /*      n            : dimension of data vector   */
 /*      K            : number of centers          */ 
 /* ---------------------------------------------- */
-
+/*
 void myKmeans(double * data_vectors, double * centers, 
             double * variances, int m, int n, int K)
 {
@@ -83,23 +83,7 @@ void myKmeans(double * data_vectors, double * centers,
 			}
 			member[imin].push_back(i);
 		}
-		/*
-		for(int i=0;i<K;i++)
-		{
-			if(member[i].size()==0) 
-			{
-				for(int j=0;j<K;j++)
-				{
-					if(member[j].size()>=2)
-					{
-						member[i].push_back(member[j][member[j].size()-1]);
-						member[j].resize(member[j].size()-1);
-						break;
-					}
-				}
-			}
-		}
-		*/
+
 		sumdiff=0.0;
 		for(int i=0;i<K;i++)
 		{
@@ -155,7 +139,7 @@ void myKmeans(double * data_vectors, double * centers,
 	delete[] pattern;
 	delete[] old;
 }
-
+*/
 
 void Kmeans(double * data_vectors, double * centers, 
             double * variances, int m, int n, int K)

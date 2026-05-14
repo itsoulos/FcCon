@@ -11,23 +11,13 @@ double  AiRbf::train1()
     k = num_weights;
     MatrixXd X(xpoint.size(),pattern_dimension);
     VectorXd y(xpoint.size());
-
+    if(!mapTrainSet()) return 1e+100;
     for(int i=0;i<(int)xpoint.size();i++)
     {
-        int d=mapper->map(origx[i],xpoint[i]);
-
-        if(!d)
-        {
-            return 1e+100;
-        }
         for(int j=0;j<pattern_dimension;j++)
         {
 
             X(i,j)=xpoint[i][j];
-        }
-        if(!d)
-        {
-            return 1e+100;
         }
         y(i)=ypoint[i];
     }

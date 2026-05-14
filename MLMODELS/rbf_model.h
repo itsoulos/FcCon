@@ -5,7 +5,7 @@
 class Rbf :public Model
 {
 	private:
-	        double *input,*centers,*variances,*weights;
+            double *input,*centers,*variances,*weights,*Output;
 	public:
 		Rbf(Mapper *m);
 		double	setWeightValuesFromPattern(double *pattern,int size);

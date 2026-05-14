@@ -287,17 +287,18 @@ void        Population::nextGeneration()
 	calcFitnessArray();
 
 	select();
-    	if((generation+1)%50==0) 
-    	{
-	    localSearch(0);
-	    for(int i=0;i<4;i++)
-	    localSearch(rand()%genome_count);
+        if((generation+1)%50==0)
+        {
+        for(int i=0;i<5;i++)
+        localSearch(i==0?0:rand()%genome_count);
 	    select();
     	}
-	
-	crossItem(0);
-    for(int i=0;i<4;i++)
-        crossItem(rand() % genome_count);
+
+        if((generation+1)%10==0)
+        {
+            for(int i=0;i<10;i++)
+                crossItem(i==0?0:rand() % genome_count);
+        }
 	select();
 	crossover();
 	if(generation) mutate();

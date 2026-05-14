@@ -27,15 +27,8 @@ void        Neural::setWeights(Data x)
 
 double Neural::train1()
 {
-	for(int i=0;i<xpoint.size();i++) 
-	{
-		int d=mapper->map(origx[i],xpoint[i]);
-		if(!d) return 1e+100;
-		for(int j=0;j<pattern_dimension;j++)
-		{
-			if(isinf(xpoint[i][j])) return 1e+100;
-		}
-	}
+    if(!mapTrainSet()) return 1e+100;
+
 	double v;
 	MinInfo Info;
 	Info.p = this;
@@ -114,10 +107,8 @@ void devmarJac(double *p, double *jac, int m, int n, void *data)
 double Neural::train2()
 {
 	double v;
-	for(int i=0;i<xpoint.size();i++) 
-	{
-		mapper->map(origx[i],xpoint[i]);
-	}
+    if(!mapTrainSet()) return 1e+100;
+
 /*	randomizeWeights();
 	LMstat lmstat;
 	levmarq_init(&lmstat);

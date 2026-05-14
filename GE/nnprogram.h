@@ -7,6 +7,7 @@
 # include <MLMODELS/knn.h>
 # include <MLMODELS/mapper.h>
 # include <MLMODELS/airbf.h>
+# include <CORE/dataset.h>
 # include <vector>
 using namespace std;
 
@@ -26,7 +27,7 @@ class NNprogram	:public Program
 		Model	 *model;
 		Mapper	 *mapper;
 	public:
-		NNprogram(int type,int pdimension,char *filename);
+        NNprogram(int type,int pdimension,Dataset *train,Dataset *test);
 		string	printF(vector<int> &genome);
 		virtual double 	fitness(vector<int> &genome);
 		Model	*getModel();

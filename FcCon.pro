@@ -18,6 +18,7 @@ QMAKE_LFLAGS += -fopenmp
 INCLUDEPATH += /usr/include/eigen3
 SOURCES += \
         CORE/collection.cc \
+        CORE/dataset.cpp \
         CORE/parameter.cpp \
         CORE/parameterlist.cpp \
         CORE/problem.cc \
@@ -49,6 +50,7 @@ SOURCES += \
 
 HEADERS += \
     CORE/collection.h \
+    CORE/dataset.h \
     CORE/parameter.h \
     CORE/parameterlist.h \
     CORE/problem.h \

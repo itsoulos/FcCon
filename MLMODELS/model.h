@@ -3,6 +3,7 @@
 
 # include <CORE/problem.h>
 # include <MLMODELS/mapper.h>
+# include <CORE/dataset.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -18,31 +19,29 @@ extern Data		xmean;
 extern Data		xstd;
 extern Data		xcurrent;
 
-struct Sample {
-    std::vector<double> features;
-    double label;
-};
+
 class Model :public Problem
 {
 	protected:
         int             isvalidation;
-        Data          weight;
+        Data            weight;
         int             num_weights;
         int             pattern_dimension;
         int             original_dimension;
-        vector<Data> 	origx;
-        Data          origy;
+
         vector<Data> 	xpoint;
         Data          ypoint;
-        Data          dclass;
+        Dataset     *trainSet;
+        Dataset     *testSet;
+        vector<Data> xall;
 	public:
 
 		Mapper	*mapper;
 		Model(Mapper *m);
         void        setPatternDimension(int d);
         void        setNumOfWeights(int w);
-		void 	readPatterns(char *filename);
-        void        replacePattern(int pos,Data x,double y);
+        void    setTrainSet(Dataset *t);
+        void    setTestSet(Dataset *t);
         int     getPatternDimension() const;
         int     getOriginalDimension() const;
         int     getNumOfWeights() const;
@@ -58,38 +57,27 @@ class Model :public Problem
 		virtual	double 	train1()=0;
 		virtual double	train2()=0;
         virtual double	output(Data &x)=0;
-        virtual void        getDeriv(Data  &x,Data &g)=0;
+        virtual void    getDeriv(Data  &x,Data &g)=0;
 		
         virtual double	funmin(Data &x);
         virtual void    granal(Data &x,Data &g);
-        void        transform(Data x,Data &xx);
 		double  valError();
-        void        enableValidation();
-		double	testError(char *filename);
-		double	classTestError(char *filename,double &precision,double &recall);
-        void    	print(char *train,char *itest,char *otest);
+        void    enableValidation();
+        double	testError();
+        double	classTestError();
         void    	randomizeWeights();
         void    	printConfusionMatrix(vector<double> &dclass,
                                         vector<double> &T,vector<double> &O,
                                          vector<double> &precision,
                                          vector<double> &recall);
-        void    getPrecisionRecall(const char *filename,
+        void    getPrecisionRecall(Dataset *t,
                     double &avg_precision,double &avg_recall,
                     double &avg_fscore);
-        void    getPrecisionRecall(
-                                double &avg_precision,double &avg_recall,
-                                double &avg_fscore);
+
         double distance(const std::vector<double>& a, const std::vector<double>& b);
-        std::vector<int> kNearest(
-            const std::vector<Sample>& minority,
-            int index,
-            int k);
-        std::vector<Sample> applySMOTE(
-            const std::vector<Sample>& data,
-            int k = 5
-            );
-        void    enableSmote();
+
         double  getAverageClassError(Data &x);
+        bool    mapTrainSet();
 		~Model();
 };
 

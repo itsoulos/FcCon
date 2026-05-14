@@ -53,6 +53,7 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = CORE/collection.cc \
+		CORE/dataset.cpp \
 		CORE/parameter.cpp \
 		CORE/parameterlist.cpp \
 		CORE/problem.cc \
@@ -82,6 +83,7 @@ SOURCES       = CORE/collection.cc \
 		MLMODELS/tolmin.cc \
 		main.cpp 
 OBJECTS       = collection.o \
+		dataset.o \
 		parameter.o \
 		parameterlist.o \
 		problem.o \
@@ -146,7 +148,6 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_nfc.pri \
-		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions_private.pri \
@@ -197,6 +198,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		FcCon.pro CORE/collection.h \
+		CORE/dataset.h \
 		CORE/parameter.h \
 		CORE/parameterlist.h \
 		CORE/problem.h \
@@ -225,6 +227,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		MLMODELS/model.h \
 		MLMODELS/neural.h \
 		MLMODELS/rbf_model.h CORE/collection.cc \
+		CORE/dataset.cpp \
 		CORE/parameter.cpp \
 		CORE/parameterlist.cpp \
 		CORE/problem.cc \
@@ -300,7 +303,6 @@ Makefile: FcCon.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf /
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_nfc.pri \
-		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions_private.pri \
@@ -388,7 +390,6 @@ Makefile: FcCon.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf /
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_nfc.pri:
-/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions_private.pri:
@@ -454,8 +455,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents CORE/collection.h CORE/parameter.h CORE/parameterlist.h CORE/problem.h GE/cprogram.h GE/doublestack.h GE/f2c.h GE/fparser.hh GE/fpconfig.hh GE/fptypes.hh GE/integeranneal.h GE/nnprogram.h GE/population.h GE/program.h GE/rule.h GE/symbol.h GRS/grs.h GRS/grspopulation.h GRS/rlsprogram.h MLMODELS/Rbf.h MLMODELS/airbf.h MLMODELS/gensolver.h MLMODELS/kmeans.h MLMODELS/knn.h MLMODELS/mapper.h MLMODELS/matrix_functions.h MLMODELS/model.h MLMODELS/neural.h MLMODELS/rbf_model.h $(DISTDIR)/
-	$(COPY_FILE) --parents CORE/collection.cc CORE/parameter.cpp CORE/parameterlist.cpp CORE/problem.cc GE/cprogram.cc GE/doublestack.cc GE/fparser.cc GE/fpoptimizer.cc GE/integeranneal.cpp GE/nnprogram.cc GE/population.cc GE/program.cc GE/rule.cc GE/symbol.cc GRS/grs.cc GRS/grspopulation.cc GRS/rlsprogram.cc MLMODELS/Rbf.cc MLMODELS/airbf.cpp MLMODELS/gensolver.cc MLMODELS/kmeans.cc MLMODELS/knn.cc MLMODELS/mapper.cc MLMODELS/matrix_functions.cc MLMODELS/model.cc MLMODELS/neural.cc MLMODELS/rbf_model.cc MLMODELS/tolmin.cc main.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents CORE/collection.h CORE/dataset.h CORE/parameter.h CORE/parameterlist.h CORE/problem.h GE/cprogram.h GE/doublestack.h GE/f2c.h GE/fparser.hh GE/fpconfig.hh GE/fptypes.hh GE/integeranneal.h GE/nnprogram.h GE/population.h GE/program.h GE/rule.h GE/symbol.h GRS/grs.h GRS/grspopulation.h GRS/rlsprogram.h MLMODELS/Rbf.h MLMODELS/airbf.h MLMODELS/gensolver.h MLMODELS/kmeans.h MLMODELS/knn.h MLMODELS/mapper.h MLMODELS/matrix_functions.h MLMODELS/model.h MLMODELS/neural.h MLMODELS/rbf_model.h $(DISTDIR)/
+	$(COPY_FILE) --parents CORE/collection.cc CORE/dataset.cpp CORE/parameter.cpp CORE/parameterlist.cpp CORE/problem.cc GE/cprogram.cc GE/doublestack.cc GE/fparser.cc GE/fpoptimizer.cc GE/integeranneal.cpp GE/nnprogram.cc GE/population.cc GE/program.cc GE/rule.cc GE/symbol.cc GRS/grs.cc GRS/grspopulation.cc GRS/rlsprogram.cc MLMODELS/Rbf.cc MLMODELS/airbf.cpp MLMODELS/gensolver.cc MLMODELS/kmeans.cc MLMODELS/knn.cc MLMODELS/mapper.cc MLMODELS/matrix_functions.cc MLMODELS/model.cc MLMODELS/neural.cc MLMODELS/rbf_model.cc MLMODELS/tolmin.cc main.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -508,6 +509,9 @@ compiler_clean: compiler_moc_predefs_clean
 collection.o: CORE/collection.cc CORE/collection.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o collection.o CORE/collection.cc
 
+dataset.o: CORE/dataset.cpp CORE/dataset.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dataset.o CORE/dataset.cpp
+
 parameter.o: CORE/parameter.cpp CORE/parameter.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o parameter.o CORE/parameter.cpp
 
@@ -556,6 +560,7 @@ nnprogram.o: GE/nnprogram.cc GE/nnprogram.h \
 		MLMODELS/model.h \
 		CORE/problem.h \
 		MLMODELS/mapper.h \
+		CORE/dataset.h \
 		MLMODELS/neural.h \
 		MLMODELS/rbf_model.h \
 		MLMODELS/Rbf.h \
@@ -580,6 +585,7 @@ population.o: GE/population.cc GE/population.h \
 		GE/cprogram.h \
 		MLMODELS/model.h \
 		MLMODELS/mapper.h \
+		CORE/dataset.h \
 		MLMODELS/neural.h \
 		MLMODELS/rbf_model.h \
 		MLMODELS/Rbf.h \
@@ -643,7 +649,8 @@ airbf.o: MLMODELS/airbf.cpp MLMODELS/airbf.h \
 		MLMODELS/model.h \
 		CORE/problem.h \
 		MLMODELS/mapper.h \
-		GE/fparser.hh
+		GE/fparser.hh \
+		CORE/dataset.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o airbf.o MLMODELS/airbf.cpp
 
 gensolver.o: MLMODELS/gensolver.cc MLMODELS/gensolver.h \
@@ -651,7 +658,8 @@ gensolver.o: MLMODELS/gensolver.cc MLMODELS/gensolver.h \
 		MLMODELS/neural.h \
 		MLMODELS/model.h \
 		MLMODELS/mapper.h \
-		GE/fparser.hh
+		GE/fparser.hh \
+		CORE/dataset.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o gensolver.o MLMODELS/gensolver.cc
 
 kmeans.o: MLMODELS/kmeans.cc MLMODELS/kmeans.h
@@ -662,6 +670,7 @@ knn.o: MLMODELS/knn.cc MLMODELS/knn.h \
 		CORE/problem.h \
 		MLMODELS/mapper.h \
 		GE/fparser.hh \
+		CORE/dataset.h \
 		MLMODELS/gensolver.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o knn.o MLMODELS/knn.cc
 
@@ -676,7 +685,8 @@ matrix_functions.o: MLMODELS/matrix_functions.cc MLMODELS/matrix_functions.h
 model.o: MLMODELS/model.cc MLMODELS/model.h \
 		CORE/problem.h \
 		MLMODELS/mapper.h \
-		GE/fparser.hh
+		GE/fparser.hh \
+		CORE/dataset.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o model.o MLMODELS/model.cc
 
 neural.o: MLMODELS/neural.cc MLMODELS/neural.h \
@@ -684,6 +694,7 @@ neural.o: MLMODELS/neural.cc MLMODELS/neural.h \
 		CORE/problem.h \
 		MLMODELS/mapper.h \
 		GE/fparser.hh \
+		CORE/dataset.h \
 		MLMODELS/gensolver.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o neural.o MLMODELS/neural.cc
 
@@ -692,6 +703,7 @@ rbf_model.o: MLMODELS/rbf_model.cc MLMODELS/rbf_model.h \
 		CORE/problem.h \
 		MLMODELS/mapper.h \
 		GE/fparser.hh \
+		CORE/dataset.h \
 		MLMODELS/Rbf.h \
 		MLMODELS/matrix_functions.h \
 		MLMODELS/kmeans.h
@@ -701,7 +713,8 @@ tolmin.o: MLMODELS/tolmin.cc CORE/problem.h \
 		MLMODELS/neural.h \
 		MLMODELS/model.h \
 		MLMODELS/mapper.h \
-		GE/fparser.hh
+		GE/fparser.hh \
+		CORE/dataset.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o tolmin.o MLMODELS/tolmin.cc
 
 main.o: main.cpp CORE/parameterlist.h \
@@ -717,6 +730,7 @@ main.o: main.cpp CORE/parameterlist.h \
 		MLMODELS/model.h \
 		CORE/problem.h \
 		MLMODELS/mapper.h \
+		CORE/dataset.h \
 		MLMODELS/neural.h \
 		MLMODELS/rbf_model.h \
 		MLMODELS/Rbf.h \

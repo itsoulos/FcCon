@@ -6,9 +6,12 @@
 # include <GE/nnprogram.h>
 # include <QCoreApplication>
 # include <QFile>
+# include <CORE/dataset.h>
 
 NNprogram *p=NULL;
 Population *pop=NULL;
+Dataset *trainSet = NULL;
+Dataset *testSet  = NULL;
 
 int random_seed=1;
 int fc_iters=10;
@@ -23,9 +26,11 @@ ParameterList mainParamList;
 ParameterList neuralParamList;
 QString selectedTrainFile = "";
 QString selectedTestFile = "";
+bool    fc_enableclassfitness=false;
 bool    fc_balanceclass =false;
 bool    fc_enablesmote  =false;
 bool    fc_enablemean   =false;
+bool    fc_enablenorm   =false;
 
 void init();
 void run();
@@ -58,6 +63,12 @@ void makeMainParams()
                                      yesno[0],yesno,"Enable or disable smote"));
 
     mainParamList.addParam(Parameter("fc_enablemean",yesno[0],yesno,"Enable or disable the usage of geometric mean"));
+
+    mainParamList.addParam(Parameter("fc_enableclassfitness",yesno[0],yesno,
+        "Enable or disable the usage of class fitness"));
+
+    mainParamList.addParam(Parameter("fc_enablenorm",yesno[0],yesno,
+        "Enable or disable the normalization of input patterns"));
 }
 
 int    neural_bfgs_iters= 2001;
@@ -114,7 +125,6 @@ void    printHelp()
 }
 
 
-
 void parseCmdLine(QStringList args)
 {
     QString lastParam="";
@@ -167,7 +177,8 @@ void    loadDataFiles()
 
     if(!QFile::exists(selectedTestFile))
         error(QString("Trainfile %1 does not exist").arg(selectedTestFile));
-
+    trainSet = new Dataset(selectedTrainFile);
+    testSet  = new Dataset(selectedTestFile);
 }
 
 void    init()
@@ -206,7 +217,8 @@ void runNeural(int iter,double &testError,double &classError,
     srand(iter);
     srand48(iter);
     Neural *neural = new Neural(p->getMapper());
-    neural->readPatterns(train_file);
+    neural->setTrainSet(trainSet);
+    neural->setTestSet(testSet);
     neural->setNumOfWeights(w);
     neural->setPatternDimension(pattern_dimension);
     classError = 0.0;
@@ -217,10 +229,10 @@ void runNeural(int iter,double &testError,double &classError,
     for(int i=1;i<=total_runs;i++)
     {
     double d=neural->train2();
-    testError+=neural->testError(test_file);
+    testError+=neural->testError();
     double precision,recall,fscore;
-    classError+=neural->classTestError(test_file,precision,recall);
-    neural->getPrecisionRecall(test_file,precision,recall,fscore);
+    classError+=neural->classTestError();
+    neural->getPrecisionRecall(testSet,precision,recall,fscore);
     avg_precision+=precision;
     avg_recall+=recall;
     avg_fscore+=fscore;
@@ -256,7 +268,8 @@ void runRbf(int iter,
     int w=10;
     int total_runs=30;
     Rbf *neural = new Rbf(p->getMapper());
-    neural->readPatterns(train_file);
+    neural->setTrainSet(trainSet);
+    neural->setTestSet(testSet);
     neural->setNumOfWeights(w);
     neural->setPatternDimension(pattern_dimension);
     testError = 0.0;
@@ -267,10 +280,10 @@ void runRbf(int iter,
     for(int i=1;i<=total_runs;i++)
     {
     double d=neural->train2();
-    testError+=neural->testError(test_file);
+    testError+=neural->testError();
     double precision,recall,fscore;
-    classError+=neural->classTestError(test_file,precision,recall);
-    neural->getPrecisionRecall(test_file,precision,recall,fscore);
+    classError+=neural->classTestError();
+    neural->getPrecisionRecall(testSet,precision,recall,fscore);
     avg_precision+=precision;
     avg_recall+=recall;
     avg_fscore+=fscore;
@@ -282,7 +295,7 @@ void runRbf(int iter,
     avg_fscore/=total_runs;
     //make red report
     red();
-    printf("RBF.    TEST ERROR: %10.5lg CLASS ERROR: %10.5lg%%\n",testError,classError*100.0);
+    printf("RBF.    TEST ERROR: %10.5lg CLASS ERROR: %10.5lg%%\n",testError,classError);
     printf("RBF.    PRECISION %10.5lg RECALL %10.5lg FSCORE %10.5lg\n",
            avg_precision,avg_recall,avg_fscore);
     reset();
@@ -320,9 +333,12 @@ void run()
     int length = mainParamList.getParam("fc_length").getValue().toInt();
     int num_weights = mainParamList.getParam("fc_weights").getValue().toInt();
     int generations = mainParamList.getParam("fc_generations").getValue().toInt();
+
     fc_balanceclass = mainParamList.getParam("fc_balanceclass").getValue()=="yes";
     fc_enablesmote  = mainParamList.getParam("fc_enablesmote").getValue()=="yes";
     fc_enablemean  = mainParamList.getParam("fc_enablemean").getValue()=="yes";
+    fc_enableclassfitness=mainParamList.getParam("fc_enableclassfitness").getValue()=="yes";
+    fc_enablenorm=mainParamList.getParam("fc_enablenorm").getValue()=="yes";
 
     vector<int> genome;
     genome.resize(length);
@@ -331,19 +347,23 @@ void run()
     vector<int> bestgenome;
     bestgenome.resize(length);
 
-    bool old1,old2,old3;
+    bool old1,old2,old3,old4,old5;
 	old1=fc_balanceclass;
 	old2=fc_enablesmote;
 	old3=fc_enablemean;
+    old4=fc_enableclassfitness;
+    old5=fc_enablenorm;
     for(random_seed=1;random_seed<=total_runs;random_seed++)
     {
 	fc_balanceclass=old1;
 	fc_enablesmote=old2;
 	fc_enablemean=old3;
+    fc_enableclassfitness=old4;
+    fc_enablenorm=old5;
         srand(100+random_seed);
         strcpy(train_file,selectedTrainFile.toStdString().c_str());
 
-        p=new NNprogram(model_type,pattern_dimension,(char *)selectedTrainFile.toStdString().c_str());
+        p=new NNprogram(model_type,pattern_dimension,trainSet,testSet);
         pop=new Population(pcount,length,p);
         pop->setLocalMethod(mainParamList.getParam("fc_local").getValue().toStdString());
         p->getModel()->setPatternDimension(pattern_dimension);
@@ -359,11 +379,10 @@ void run()
                 {
                     printf("RUN: %d GENERATION=%d FITNESS=%.8lg\nPROGRAMS=\n%s",
                         random_seed,i,pop->getBestFitness(),s.c_str());
-                    printf("TEST ERROR  = %.8lg \n",
-                       p->getModel()->testError((char*)selectedTestFile.toStdString().c_str()));
+                    printf("TEST ERROR  = %.8lg \n",p->getModel()->testError());
                     double precision,recall;
                     printf("MODEL CLASS ERROR = %.8lf%% \n",
-                       p->getModel()->classTestError((char*)selectedTestFile.toStdString().c_str(),precision,recall)*100.0);
+                       p->getModel()->classTestError());
                     fflush(stdout);
                     if(fabs(pop->getBestFitness())<1e-7) break;
                 }
@@ -376,6 +395,8 @@ void run()
 	old1=fc_balanceclass;
 	old2=fc_enablesmote;
 	old3=fc_enablemean;
+    old4=fc_enableclassfitness;
+    old5=fc_enablenorm;
         fc_balanceclass = false;
         fc_enablesmote = false;
 	fc_enablemean=false;
@@ -447,6 +468,10 @@ void done()
         delete p;
     if(pop!=NULL)
         delete pop;
+    if(trainSet!=NULL)
+        delete trainSet;
+    if(testSet!=NULL)
+        delete testSet;
 }
 
 int main(int argc,char **argv)

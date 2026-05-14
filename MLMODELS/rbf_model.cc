@@ -1,5 +1,4 @@
 # include <MLMODELS/rbf_model.h>
-//# define CLASS
 
 Rbf::Rbf(Mapper *m)
 	:Model(m)
@@ -11,14 +10,10 @@ Rbf::Rbf(Mapper *m)
 	weight.resize(0);
 }
 
-double *Output;
-
 double Rbf::train1()
 {
-	int noutput=1;
-	#ifdef CLASS
-		noutput=2;
-	#endif
+    int noutput=1;
+
 	if(weight.size() != noutput * num_weights)
 	{
 		weight.resize(num_weights*noutput);
@@ -34,70 +29,35 @@ double Rbf::train1()
 		variances = new double[num_weights * pattern_dimension];
 		weights = new double[num_weights*noutput];
 		input = new double[pattern_dimension*xpoint.size()];
-	}
-	Output=new double[noutput * xpoint.size()];
+        Output=new double[noutput * xpoint.size()];
 
-    Data xx;
-	xx.resize(original_dimension);
-	for(int i=0;i<xpoint.size();i++) 
-	{
-		int d=mapper->map(origx[i],xpoint[i]);
-		if(!d) 
-		{
-			delete[] Output;
-			return 1e+100;
-		}
+	}
+
+    if(!mapTrainSet())
+    {
+        return 1e+100;
+    }
+
+    for(int i=0;i<(int)xpoint.size();i++)
+    {
 		for(int j=0;j<pattern_dimension;j++)
 		{
 			
 			input[i*pattern_dimension+j]=xpoint[i][j];
+            if(fabs(xpoint[i][j])>=1e+10 || isnan(xpoint[i][j]) || isinf(xpoint[i][j]))
+            {
+                return 1e+100;
+            }
 		}
-		if(!d)  
-		{
-			printf("fail3\n");
-			delete[] Output;
-			return 1e+100;
-		}
-#ifndef CLASS
 		Output[i]=ypoint[i];
-#endif
-	}
-#ifdef CLASS
-	for(int i=0;i<ypoint.size();i++)
-	{
-		Output[i*2+0]=ypoint[i]>0?0:1;
-		Output[i*2+1]=ypoint[i]>0?1:0;
-	}
-#endif
-
-
-        Kmeans(input,centers,variances,
+    }
+    Kmeans(input,centers,variances,
 			xpoint.size(),pattern_dimension,num_weights);
 	
-        int icode=train_rbf(pattern_dimension,num_weights,noutput,xpoint.size(),
+    int icode=train_rbf(pattern_dimension,num_weights,noutput,xpoint.size(),
 			centers,variances,weights,input,Output);
 	double v =0.0;
-#ifndef CLASS
-	double norm=0.0;
-	for(int i=0;i<weight.size();i++) {weight[i]=weights[i];norm+=fabs(weight[i]);}
 	v=funmin(weight);
-#else
-	for(int i=0;i<ypoint.size();i++)
-	{
-		double pattern[2];
-		if(ypoint[i]>0) {pattern[0]=0;pattern[1]=1;}
-		else            {pattern[0]=1;pattern[1]=0;}
-		
-		double outv[noutput];
-		double *xt=new double[pattern_dimension];
-		for(int j=0;j<pattern_dimension;j++) xt[j]=xpoint[i][j];
-		create_rbf(pattern_dimension,num_weights,noutput,
-				centers,variances,weights,xt,outv);
-		v+=pow(outv[0]-pattern[0],2.0)+pow(outv[1]-pattern[1],2.0);
-		delete[] xt;
-	}
-#endif
-	delete[] Output;
 	if(icode==1) return 1e+100;
 	return v;
 }
@@ -135,33 +95,20 @@ double	Rbf::setWeightValuesFromPattern(double *pattern,int size)
 			weights[icount++]=pattern[2*i];
 	}
 
-    Data xx;
-	xx.resize(original_dimension);
+    if(!mapTrainSet()) return 1e+100;
+
 	for(int i=0;i<xpoint.size();i++) 
 	{
-		int d=mapper->map(origx[i],xpoint[i]);
-		if(!d) 
-		{
-			return 1e+100;
-		}
 		for(int j=0;j<pattern_dimension;j++)
-		{
-			
+		{		
 			input[i*pattern_dimension+j]=xpoint[i][j];
 			if(fabs(xpoint[i][j])>=1e+10 || isnan(xpoint[i][j]) || isinf(xpoint[i][j]))
 			{
 				return 1e+100;
 			}
 		}
-		if(!d)  
-		{
-			return 1e+100;
-		}
-		Output[i]=ypoint[i];
+        Output[i]=ypoint[i];
 	}
-
-
-
 	srand48(1);
         Kmeans(input,centers,variances,
 			xpoint.size(),pattern_dimension,num_weights);
@@ -169,9 +116,7 @@ double	Rbf::setWeightValuesFromPattern(double *pattern,int size)
         int icode=train_rbf(pattern_dimension,num_weights,noutput,xpoint.size(),
      			centers,variances,weights,input,Output);
 	double v =0.0;
-	double norm=0.0;
-	for(int i=0;i<weight.size();i++) {weight[i]=weights[i];norm+=fabs(weight[i]);}
-	
+
 	v=funmin(weight);
 	return v;
 }
@@ -189,25 +134,17 @@ double Rbf::train2()
 double Rbf::output(Data &x)
 {
 	if(x.size()==0) return 1e+100;
-	int noutput=1;
-#ifdef CLASS
-	noutput=2;
-#endif
-	double v[noutput];
+    double v[1];
 	double *xt=new double[x.size()];
 	double penalty=0.0;
 	for(int i=0;i<x.size();i++) 
 	{
 		xt[i]=x[i];
 	}
-	create_rbf(pattern_dimension,num_weights,noutput,
+    create_rbf(pattern_dimension,num_weights,1,
 			centers,variances,weights,xt,v);
 	delete[] xt;
-#ifndef CLASS
 	return v[0];
-#else
-	return (v[0]>v[1]?0:1);	
-#endif
 }
 
 void   Rbf::getDeriv(Data &x,Data &g)
@@ -221,5 +158,5 @@ Rbf::~Rbf()
 	delete[] variances;
 	delete[] weights;
 	delete[] input;
-
+    delete[] Output;
 }
