@@ -18,6 +18,9 @@ private:
     double sigma;
     MatrixXd centers;
     VectorXd weights;
+    MatrixXd X;
+    VectorXd y;
+    MatrixXd Phi;
 public:
     AiRbf(Mapper *m);
     virtual double train1();

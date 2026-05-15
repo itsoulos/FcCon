@@ -12,8 +12,12 @@ double  AiRbf::train1()
     extern bool fc_enablemean;
     extern bool fc_enableclassfitness;
     k = num_weights;
-    MatrixXd X(xpoint.size(),pattern_dimension);
-    VectorXd y(xpoint.size());
+    if((int)weight.size()!=k)
+    {
+        weight.resize(k);
+        X.resize(xpoint.size(),pattern_dimension);
+        y.resize(xpoint.size());
+    }
     if(!mapTrainSet()) return 1e+100;
     for(int i=0;i<(int)xpoint.size();i++)
     {
@@ -25,8 +29,7 @@ double  AiRbf::train1()
         y(i)=ypoint[i];
     }
     train(X,y);
-    weight.resize(k);
-    MatrixXd Phi = computePhi(X);
+    computePhi(X);
     VectorXd preds= Phi * weights;
     double sum = 0.0;
     vector<int> missed,belong;
@@ -100,7 +103,10 @@ MatrixXd    AiRbf::kmeans(const MatrixXd &X, int k, int iters)
     int n = X.rows(), d = X.cols();
     mt19937 gen(1);
     uniform_int_distribution<> dis(0, n - 1);
-    MatrixXd centers(k, d);
+    if(centers.rows()==0)
+    {
+        centers.resize(k,d);
+    }
     for (int i = 0; i < k; i++)
         centers.row(i) = X.row(dis(gen));
 
@@ -151,7 +157,10 @@ void    AiRbf::computeSigma()
 MatrixXd  AiRbf::computePhi(const MatrixXd &X)
 {
     int n = X.rows();
-    MatrixXd Phi(n, k + 1);
+    if(Phi.rows()!=n)
+    {
+        Phi.resize(n,k+1);
+    }
     for (int i = 0; i < n; i++) {
         Phi(i, 0) = 1.0;
 
@@ -165,9 +174,10 @@ MatrixXd  AiRbf::computePhi(const MatrixXd &X)
 
 void    AiRbf::train(const MatrixXd &X, const VectorXd &y)
 {
-    centers = kmeans(X, k);
+
+    kmeans(X, k);
     computeSigma();
-    MatrixXd Phi = computePhi(X);
+    computePhi(X);
     MatrixXd A = Phi.transpose() * Phi;
     A += lambda * MatrixXd::Identity(A.rows(), A.cols());
     VectorXd b = Phi.transpose() * y;

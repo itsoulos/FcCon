@@ -21,7 +21,7 @@ TRAINFILE=$DATAPATH/$DATAFILE.train
 ## The name of  input test file
 TESTFILE=$DATAPATH/$DATAFILE.test
 ## The model used for feature construction
-MODEL=rbf ##Values: rbf,neural,airbf
+MODEL=airbf ##Values: rbf,neural,airbf
 ## The local optimization procedure
 LOCAL=mutate ##Values: none,crossover,mutate,de,siman,gd,adam
 ## Enable or disable the balanced class fitness
