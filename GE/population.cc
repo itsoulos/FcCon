@@ -236,17 +236,12 @@ void    	Population::mutate()
 /* Evaluate the fitness for all chromosomes in the current population */
 void    	Population::calcFitnessArray()
 {
-	vector<int> g;
-	g.resize(genome_size);
-
 	double dmin=1e+100;
 	int icount=0;
 	for(int i=0;i<genome_count;i++)
 	{
-		for(int j=0;j<genome_size;j++) g[j]=genome[i][j];	
-		fitness_array[i]=fitness(g);
-        //if(rand()*1.0/RAND_MAX<=0.005)
-        //	localSearch(i);
+        vector<int> v(genome[i],genome[i]+genome_size);
+        fitness_array[i]=fitness(v);
 
         if(fabs(fitness_array[i])<dmin)
 		{
@@ -254,7 +249,7 @@ void    	Population::calcFitnessArray()
 		}
 		if(fabs(fitness_array[i])>=1e+100) icount++;	
 		
-        if((i+1)%50==0)
+        if((i+1)%20==0)
 		{
 			printf(" %d:%.5lg ",i+1,dmin);
 			fflush(stdout);

@@ -430,8 +430,10 @@ void    Dataset::normalizeMinMax()
 		if(fabs(MaxX[j]-MinX[j])>1e-6)
             xpoint[i][j]=(MaxX[j]-xpoint[i][j])/(MaxX[j]-MinX[j]);
         }
-        ypoint[i]=(MaxY-ypoint[i])/(MaxY-MinY);
+        if(fabs(MaxY-MinY)>1e-6)
+            ypoint[i]=(MaxY-ypoint[i])/(MaxY-MinY);
     }
+    makePatternClass();
 }
 
 double  Dataset::getClass(double value) const
@@ -480,7 +482,7 @@ int Dataset::nearestClassIndex(double value)
      double f= getClass(value);
      for(unsigned int i=0;i<patternClass.size();i++)
      {
-         if(fabs(patternClass[i]-f)<1e-5) return i;
+         if(fabs(patternClass[i]-f)<1e-8) return i;
      }
      return 0;
 }

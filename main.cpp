@@ -445,13 +445,13 @@ void run()
     printf("BEST FITNESS = %20.8lg\n",best_fitness);
     printf("NEURAL AVERAGES.. \tTEST: %10.5lg CLASS: %10.5lg%%\n",
           total_neural_test_error/total_runs,
-          total_neural_class_error*100.0/total_runs);
+          total_neural_class_error*1.0/total_runs);
     printf("PRECISION %10.5lg RECALL %10.5lg FSCORE %10.5lg \n",
            total_neural_precision,total_neural_recall,total_neural_fscore);
 
     printf("RBF AVERAGES..    \tTEST: %10.5lg CLASS: %10.5lg%%\n",
             total_rbf_test_error/total_runs,
-            total_rbf_class_error*100.0/total_runs);
+            total_rbf_class_error*1.0/total_runs);
     printf("PRECISION %10.5lg RECALL %10.5lg FSCORE %10.5lg \n",
            total_rbf_precision,total_rbf_recall,total_rbf_fscore);
 

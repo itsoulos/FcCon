@@ -8,6 +8,9 @@ AiRbf::AiRbf(Mapper *m)
 
 double  AiRbf::train1()
 {
+    extern bool fc_balanceclass;
+    extern bool fc_enablemean;
+    extern bool fc_enableclassfitness;
     k = num_weights;
     MatrixXd X(xpoint.size(),pattern_dimension);
     VectorXd y(xpoint.size());
@@ -26,9 +29,38 @@ double  AiRbf::train1()
     MatrixXd Phi = computePhi(X);
     VectorXd preds= Phi * weights;
     double sum = 0.0;
-    for (int i = 0; i < preds.size(); i++) {
-        sum+=pow(preds(i)-y(i),2.0);
+    vector<int> missed,belong;
+    vector<double> dclass = trainSet->getPatternClass();
+    missed.resize(dclass.size());
+    belong.resize(dclass.size());
+    double dsum = 0.0;
+    for(int i=0;i<(int)missed.size();i++)
+    {
+        missed[i]=0;
+        belong[i]=0;
     }
+    for (int i = 0; i < preds.size(); i++) {
+        if(isnan(preds(i)) || isinf(preds(i))) return 1e+100;
+        sum+=pow(preds(i)-y(i),2.0);
+        int c1 = trainSet->nearestClassIndex(preds(i));
+        int c2 = trainSet->nearestClassIndex(y(i));
+       // printf("INDEXES %d %d %lf \n",c1,c2,preds(i));
+        if(fabs(c1-c2)>1e-5)
+        {
+            missed[(int)c2]++;
+            dsum+=1.0;
+        }
+        belong[(int)c2]++;
+    }
+    double sum2=0.0;
+    for(int i=0;i<(int)missed.size();i++)
+    {
+        double dc = missed[i]*100.0/belong[i];
+        sum2+=dc;
+    }
+    sum2=sum2/dclass.size();
+    if(fc_balanceclass) return sum2;
+    if(fc_enableclassfitness) return dsum*100.0/ypoint.size();
     return sum;
 }
 
