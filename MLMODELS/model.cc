@@ -261,6 +261,7 @@ double	Model::testError()
     Data xx;
     xx.resize(testSet->dimension());
     double sum = 0.0;
+
     for(int i=0;i<testSet->count();i++)
     {
         xx =testSet->getXPoint(i);
@@ -281,15 +282,37 @@ double	Model::classTestError()
     Data xx;
     xx.resize(testSet->dimension());
 	double sum = 0.0;
+    vector<double> dclass = testSet->getPatternClass();
+    vector<int> missed,belong;
+    missed.resize(dclass.size());
+    belong.resize(dclass.size());
+    for(int i=0;i<(int)missed.size();i++)
+    {
+        missed[i]=0;
+        belong[i]=0;
+    }
     for(int i=0;i<testSet->count();i++)
 	{
         xx =testSet->getXPoint(i);
         mapper->map(xx,testx);
         double d=output(testx);
-        int d1=testSet->nearestClassIndex(testSet->getYPoint(i));
-        int d2=testSet->nearestClassIndex(d);
-        sum+=(fabs(d1-d2)>1e-5);
+        double y = testSet->getYPoint(i);
+        int c1 = testSet->nearestClassIndex(d);
+        int c2 = testSet->nearestClassIndex(y);
+        if(c1!=c2)
+        {
+            missed[c2]++;
+        }
+        belong[c2]++;
+        sum+=(c1!=c2);
 	}
+    printf("TEST REPORT\n");
+    for(int i=0;i<(int)dclass.size();i++)
+    {
+        if(belong[i]==0)
+            printf("Error on class %lf \n",dclass[i]);
+        printf("ERROR CLASS[%d]=%.2lf%%\n",i,missed[i]*100.0/belong[i]);
+    }
     return (sum*100.0)/testSet->count();
 }
 

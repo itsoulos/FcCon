@@ -1,7 +1,7 @@
 BASEPATH=~/Desktop/ERGASIES/FeatureConstruction2/
 PROGRAM=./FcCon
 DATAPATH=$BASEPATH/datasets/tenfolding/
-DATAPATH=~/Desktop/ERGASIES/MLFOREST/MONO_DOUBLE/DOUBLE/TENFOLDING/DATA/
+#DATAPATH=~/Desktop/ERGASIES/MLFOREST/MONO_DOUBLE/DOUBLE/TENFOLDING/DATA/
 ## Number of iterations
 ITERS=1
 ## Number of allowed generations
@@ -32,7 +32,7 @@ ENABLESMOTE=no
 ENABLEMEAN=no
 ## Enable or disable the usage of class fitness instead of mse fitness. 
 ## Useful for classification problems.
-ENABLECLASSFITNESS=yes
+ENABLECLASSFITNESS=no
 ## Enable or disable the normalization with min - max of the dataset.
 ENABLENORM=no
  $PROGRAM --fc_iters=$ITERS --fc_generations=$GENS --fc_chromosomes=$COUNT --fc_length=$LENGTH --fc_dimension=$DIMENSION --fc_weights=$WEIGHTS --fc_trainfile=$TRAINFILE --fc_testfile=$TESTFILE --fc_local=$LOCAL --fc_balanceclass=$BALANCECLASS --fc_enablesmote=$ENABLESMOTE --fc_enablemean=$ENABLEMEAN --fc_model=$MODEL --fc_enableclassfitness=$ENABLECLASSFITNESS --fc_enablenorm=$ENABLENORM
