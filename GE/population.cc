@@ -92,19 +92,16 @@ Population::Population(int gcount,int gsize,Program *p)
 
 	/* Create the population and based on genome count and size */
 	/* Initialize the genomes to random */
-	double f;
-	genome=new int*[genome_count];
-	children=new int*[genome_count];
-	vector<int> g;
-	g.resize(genome_size);
+    genome.resize(genome_count);
+    children.resize(genome_count);
 	for(int i=0;i<genome_count;i++)
 	{
-		genome[i]=new int[genome_size];
-		children[i]=new int[genome_size];
+        genome[i].resize(genome_size);
+        children[i].resize(genome_size);
 			for(int j=0;j<genome_size;j++)
-				g[j]=genome[i][j]=rand()%MAX_RULE;
+                genome[i][j]=rand()%MAX_RULE;
 	}
-	fitness_array=new double[genome_count];
+    fitness_array.resize(genome_count);
 }
 
 /* Reinitialize the population to random */
@@ -127,7 +124,7 @@ double 	Population::fitness(vector<int> &g)
 /* The selection of the chromosomes according to the fitness value is performed */
 void	 Population::select()
 {
-	int itemp[genome_size];
+    vector<int> itemp;
 	for(int i=0;i<genome_count;i++)
 	{
 		for(int j=0;j<genome_count-1;j++)
@@ -138,10 +135,9 @@ void	 Population::select()
 				dtemp=fitness_array[j];
 				fitness_array[j]=fitness_array[j+1];
 				fitness_array[j+1]=dtemp;
-				
-				memcpy(itemp,genome[j],genome_size*sizeof(int));
-				memcpy(genome[j],genome[j+1],genome_size*sizeof(int));
-				memcpy(genome[j+1],itemp,genome_size*sizeof(int));
+                itemp = genome[j];
+                genome[j]=genome[j+1];
+                genome[j+1]=itemp;
 			}
 		}
 	}
@@ -180,17 +176,22 @@ void        Population::crossover()
                         parent[i]=max_index;
 			
                 }
-		int pt1,pt2;
+        int pt1;
+        pt1=rand() % genome_size;
+
 		// The one-point crossover is performed here (the point is pt1)
-		pt1=rand() % genome_size;
-		memcpy(children[count_children],
-				genome[parent[0]],pt1 * sizeof(int));
-		memcpy(&children[count_children][pt1],
-			&genome[parent[1]][pt1],(genome_size-pt1)*sizeof(int));
-		memcpy(children[count_children+1],
-				genome[parent[1]],pt1 * sizeof(int));
-		memcpy(&children[count_children+1][pt1],
-			&genome[parent[0]][pt1],(genome_size-pt1)*sizeof(int));
+        std::copy(genome[parent[0]].begin(),
+                  genome[parent[0]].begin() + pt1,
+                  children[count_children].begin());
+        std::copy(genome[parent[1]].begin() + pt1,
+                  genome[parent[1]].end(),
+                  children[count_children].begin() + pt1);
+        std::copy(genome[parent[1]].begin(),
+                  genome[parent[1]].begin() + pt1,
+                  children[count_children + 1].begin());
+        std::copy(genome[parent[0]].begin() + pt1,
+                  genome[parent[0]].end(),
+                  children[count_children + 1].begin() + pt1);
 		count_children+=2;
 		if(count_children>=nchildren) break;
 	}
@@ -203,8 +204,8 @@ void        Population::crossover()
 		//for(int j=0;j<g.size();j++) g[j]=children[i][j];
 		//double f=fitness(g);
 		//if(fabs(f)<fabs(fitness_array[genome_count-i-1]))
-		memcpy(genome[genome_count-i-1],
-				children[i],genome_size * sizeof(int));
+
+        genome[genome_count-i-1]=children[i];
 	}
 }
 
@@ -240,8 +241,7 @@ void    	Population::calcFitnessArray()
 	int icount=0;
 	for(int i=0;i<genome_count;i++)
 	{
-        vector<int> v(genome[i],genome[i]+genome_size);
-        fitness_array[i]=fitness(v);
+        fitness_array[i]=fitness(genome[i]);
 
         if(fabs(fitness_array[i])<dmin)
 		{
@@ -592,7 +592,7 @@ void        Population::crossItem(int pos)
         printf("\n");
 }
 
-void	Population::mutateItem(int pos)
+void    	Population::mutateItem(int pos)
 {
 	vector<int> g;
 	g.resize(genome_size);
@@ -731,12 +731,5 @@ double	Population::evaluateBestFitness()
 /* Destructor */
 Population::~Population()
 {
-	for(int i=0;i<genome_count;i++)
-	{
-		delete[] children[i];
-		delete[] genome[i];
-	}
-	delete[] genome;
-	delete[] children;
-	delete[] fitness_array;
+
 }

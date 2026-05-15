@@ -1,16 +1,16 @@
 # ifndef __POPULATION__H
 # include <GE/program.h>
+typedef vector<int> IGENOME;
 
 /* The Population class holds the current population. */
 /* The mutation, selection and crossover operators are defined here */
 class Population
 {
 	private:
-		int	**children;
-		int	**trialx;
-		int	**genome;
-		int	*valid;
-		double *fitness_array;
+
+        vector<IGENOME> children;
+        vector<IGENOME> genome;
+        vector<double> fitness_array;
 		double	mutation_rate,selection_rate;
 		int	genome_count;
 		int	genome_size;
@@ -22,13 +22,13 @@ class Population
         void    	mutate();
         void    	calcFitnessArray();
         void    	replaceWorst();
-		int	elitism;
-        string localMethod="none";
+        int     elitism;
+        string  localMethod="none";
         void    	localSearch(int gpos);
 	public:
 		Population(int gcount,int gsize,Program *p);
 		double 	fitness(vector<int> &g);
-		void	setElitism(int s);
+        void    	setElitism(int s);
         void    setLocalMethod(string s);
         int     getGeneration() const;
         int     getCount() const;
