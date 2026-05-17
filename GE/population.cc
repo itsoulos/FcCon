@@ -238,7 +238,6 @@ void    	Population::mutate()
 void    	Population::calcFitnessArray()
 {
 	double dmin=1e+100;
-	int icount=0;
 	for(int i=0;i<genome_count;i++)
 	{
         fitness_array[i]=fitness(genome[i]);
@@ -282,22 +281,22 @@ void        Population::nextGeneration()
 	calcFitnessArray();
 
 	select();
-        if((generation+1)%50==0)
+        if((generation+1)%20==0)
         {
         for(int i=0;i<5;i++)
         localSearch(i==0?0:rand()%genome_count);
 	    select();
     	}
 
-        if((generation+1)%10==0)
+        //if((generation+1)%10==0)
         {
             for(int i=0;i<10;i++)
                 crossItem(i==0?0:rand() % genome_count);
         }
-	select();
-	crossover();
-	if(generation) mutate();
-	++generation;
+    select();
+    crossover();
+    if(generation) mutate();
+    ++generation;
 }
 
 void    	Population::replaceWorst()
@@ -599,7 +598,7 @@ void    	Population::mutateItem(int pos)
 	for(int i=0;i<genome_size;i++) g[i]=genome[pos][i];
     printf("LOCAL[%d] = ",pos);
     fflush(stdout);
-	for(int j=0;j<10;j++)
+    //for(int j=0;j<10;j++)
        for(int i=0;i<genome_size;i++)
        {
                 {
@@ -652,7 +651,7 @@ void        Population::localSearch(int pos)
             //g=simulatedAnnealing(g);
          	g=integerAdam(g);
             fitness_array[pos]=fitness(g);
-            for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
+            genome[pos]=g;
 
             printf("SIMAN[%d] %lf=>%lf\n",pos,f,fitness_array[pos]);
     }
@@ -721,11 +720,9 @@ void        Population::localSearch(int pos)
 }
 
 /* Evaluate and return the best fitness for all chromosomes in the population */
-double	Population::evaluateBestFitness() 
+double	Population::evaluateBestFitness()
 {
-	vector<int> g;g.resize(genome_size);
-	for(int i=0;i<genome_size;i++) g[i]=genome[0][i];	
-	return fitness(g);
+    return fitness(genome[0]);
 }
 
 /* Destructor */
