@@ -246,7 +246,6 @@ void    	Population::calcFitnessArray()
 		{
 			dmin=fabs(fitness_array[i]);
 		}
-		if(fabs(fitness_array[i])>=1e+100) icount++;	
 		
         if((i+1)%20==0)
 		{
@@ -281,16 +280,16 @@ void        Population::nextGeneration()
 	calcFitnessArray();
 
 	select();
-        if((generation+1)%20==0)
+        /*if((generation+1)%20==0)
         {
         for(int i=0;i<5;i++)
         localSearch(i==0?0:rand()%genome_count);
 	    select();
-    	}
+    	}*/
 
         //if((generation+1)%10==0)
         {
-            for(int i=0;i<10;i++)
+            for(int i=0;i<5;i++)
                 crossItem(i==0?0:rand() % genome_count);
         }
     select();

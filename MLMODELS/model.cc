@@ -94,7 +94,8 @@ void    Model::setTrainSet(Dataset *t)
     if(fc_enablesmote)
         trainSet->makeSmote();
     if(fc_enablenorm)
-        trainSet->normalizeMinMax();
+        trainSet->normalizeMean();
+        //trainSet->normalizeMinMax();
     xall = trainSet->getAllXpoint();
 }
 
@@ -103,7 +104,8 @@ void    Model::setTestSet(Dataset *t)
     extern bool fc_enablenorm;
     testSet = t;
     if(fc_enablenorm)
-        testSet->normalizeMinMax();
+        testSet->normalizeMean();
+        //testSet->normalizeMinMax();
 }
 
 void	Model::setNumOfWeights(int w)

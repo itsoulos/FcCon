@@ -149,6 +149,11 @@ public:
     void    normalizeMinMax();
 
     /**
+     * @brief normalizeMean Normalizes dataset using mean and std.
+     */
+    void normalizeMean();
+
+    /**
      * @brief getPatternClass
      * @return the list of distinct classes.
      */

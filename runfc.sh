@@ -15,17 +15,17 @@ DATAFILE=$1
 ## Number of constructed features
 DIMENSION=$2
 ## Number of weights used in the construction process
-WEIGHTS=10
+WEIGHTS=3
 ## The name of  input train file
 TRAINFILE=$DATAPATH/$DATAFILE.train
 ## The name of  input test file
 TESTFILE=$DATAPATH/$DATAFILE.test
 ## The model used for feature construction
-MODEL=airbf ##Values: rbf,neural,airbf
+MODEL=rbf ##Values: rbf,neural,airbf
 ## The local optimization procedure
 LOCAL=mutate ##Values: none,crossover,mutate,de,siman,gd,adam
 ## Enable or disable the balanced class fitness
-BALANCECLASS=no
+BALANCECLASS=yes
 ## Enable or disable the usage of SMOTE
 ENABLESMOTE=no
 ## Enable or disable the usage of Geometric Mean
@@ -34,5 +34,5 @@ ENABLEMEAN=no
 ## Useful for classification problems.
 ENABLECLASSFITNESS=no
 ## Enable or disable the normalization with min - max of the dataset.
-ENABLENORM=no
+ENABLENORM=yes
  $PROGRAM --fc_iters=$ITERS --fc_generations=$GENS --fc_chromosomes=$COUNT --fc_length=$LENGTH --fc_dimension=$DIMENSION --fc_weights=$WEIGHTS --fc_trainfile=$TRAINFILE --fc_testfile=$TESTFILE --fc_local=$LOCAL --fc_balanceclass=$BALANCECLASS --fc_enablesmote=$ENABLESMOTE --fc_enablemean=$ENABLEMEAN --fc_model=$MODEL --fc_enableclassfitness=$ENABLECLASSFITNESS --fc_enablenorm=$ENABLENORM

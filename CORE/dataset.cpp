@@ -436,6 +436,27 @@ void    Dataset::normalizeMinMax()
     makePatternClass();
 }
 
+void Dataset::normalizeMean()
+{
+    Data MeanX,StdX;
+    MeanX.resize(dimension());
+    StdX.resize(dimension());
+    for(int i=0;i<dimension();i++)
+    {
+        MeanX[i]=meanx(i);
+        StdX[i]=stdx(i);
+    }
+    for(int i=0;i<count();i++)
+    {
+        for(int j=0;j<dimension();j++)
+        {
+            if(fabs(StdX[j])>1e-5)
+            xpoint[i][j]=(xpoint[i][j]-MeanX[j])/StdX[j];
+        }
+    }
+    makePatternClass();
+}
+
 double  Dataset::getClass(double value) const
 {
     int imin =-1;
