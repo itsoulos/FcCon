@@ -1,6 +1,7 @@
 # include <MLMODELS/neural.h>
 # include <math.h>
 # include <MLMODELS/gensolver.h>
+# include <MLMODELS/gradientdescent.h>
 int pass=0;
 double maxx=-1e+100;
 double 	lmderFunmin(double *par,int x,void *fdata);
@@ -28,32 +29,25 @@ void        Neural::setWeights(Data x)
 double Neural::train1()
 {
     if(!mapTrainSet()) return 1e+100;
-
+    double y;
+    y=funmin(weight);
+    GradientDescent method(this);
+    method.setParam("gd_linesearch","armijo");
+    method.setPoint(weight,y);
+    method.init();
+    for(int i=0;i<5;i++)
+    {
+        method.step();
+    //    method.showDebug();
+    }
+    method.getPoint(weight,y);
+    return y;
 	double v;
 	MinInfo Info;
 	Info.p = this;
 	Info.iters=200;
 	return tolmin(weight,Info);
 
-	double oldval=funmin(weight);
-    Data saveweight;
-	saveweight.resize(weight.size());
-	saveweight=weight;
-	for(int i=1;i<=200;i++)
-	{
-		v=tolmin(weight,Info);
-		v=v*(1.0+100.0*countViolate(10.0));
-		if(v>oldval)
-		{
-			weight=saveweight;
-			v=oldval;
-			break;
-		}
-		oldval=v;
-		saveweight=weight;
-	}
-	v=funmin(weight);
-	return v;
 }
 
 double	Neural::countViolate(double limit)

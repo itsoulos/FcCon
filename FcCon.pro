@@ -38,10 +38,15 @@ SOURCES += \
         GRS/rlsprogram.cc \
         MLMODELS/Rbf.cc \
         MLMODELS/airbf.cpp \
+        MLMODELS/armijosearch.cpp \
+        MLMODELS/fibonaccisearch.cpp \
         MLMODELS/functionalrbf.cpp \
         MLMODELS/gensolver.cc \
+        MLMODELS/goldensearch.cpp \
+        MLMODELS/gradientdescent.cpp \
         MLMODELS/kmeans.cc \
         MLMODELS/knn.cc \
+        MLMODELS/linesearch.cpp \
         MLMODELS/mapper.cc \
         MLMODELS/matrix_functions.cc \
         MLMODELS/model.cc \
@@ -73,10 +78,15 @@ HEADERS += \
     GRS/rlsprogram.h \
     MLMODELS/Rbf.h \
     MLMODELS/airbf.h \
+    MLMODELS/armijosearch.h \
+    MLMODELS/fibonaccisearch.h \
     MLMODELS/functionalrbf.h \
     MLMODELS/gensolver.h \
+    MLMODELS/goldensearch.h \
+    MLMODELS/gradientdescent.h \
     MLMODELS/kmeans.h \
     MLMODELS/knn.h \
+    MLMODELS/linesearch.h \
     MLMODELS/mapper.h \
     MLMODELS/matrix_functions.h \
     MLMODELS/model.h \

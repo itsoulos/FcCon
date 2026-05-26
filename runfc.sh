@@ -21,11 +21,11 @@ TRAINFILE=$DATAPATH/$DATAFILE.train
 ## The name of  input test file
 TESTFILE=$DATAPATH/$DATAFILE.test
 ## The model used for feature construction
-MODEL=frbf ##Values: rbf,neural,airbf,frbf
+MODEL=neural ##Values: rbf,neural,airbf,frbf
 ## The local optimization procedure
-LOCAL=mutate ##Values: none,crossover,mutate,de,siman,gd,adam
+LOCAL=none ##Values: none,crossover,mutate,de,siman,gd,adam
 ## Enable or disable the balanced class fitness
-BALANCECLASS=yes
+BALANCECLASS=no
 ## Enable or disable the usage of SMOTE
 ENABLESMOTE=no
 ## Enable or disable the usage of Geometric Mean

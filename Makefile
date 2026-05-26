@@ -72,10 +72,15 @@ SOURCES       = CORE/collection.cc \
 		GRS/rlsprogram.cc \
 		MLMODELS/Rbf.cc \
 		MLMODELS/airbf.cpp \
+		MLMODELS/armijosearch.cpp \
+		MLMODELS/fibonaccisearch.cpp \
 		MLMODELS/functionalrbf.cpp \
 		MLMODELS/gensolver.cc \
+		MLMODELS/goldensearch.cpp \
+		MLMODELS/gradientdescent.cpp \
 		MLMODELS/kmeans.cc \
 		MLMODELS/knn.cc \
+		MLMODELS/linesearch.cpp \
 		MLMODELS/mapper.cc \
 		MLMODELS/matrix_functions.cc \
 		MLMODELS/model.cc \
@@ -103,10 +108,15 @@ OBJECTS       = collection.o \
 		rlsprogram.o \
 		Rbf.o \
 		airbf.o \
+		armijosearch.o \
+		fibonaccisearch.o \
 		functionalrbf.o \
 		gensolver.o \
+		goldensearch.o \
+		gradientdescent.o \
 		kmeans.o \
 		knn.o \
+		linesearch.o \
 		mapper.o \
 		matrix_functions.o \
 		model.o \
@@ -222,10 +232,15 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		GRS/rlsprogram.h \
 		MLMODELS/Rbf.h \
 		MLMODELS/airbf.h \
+		MLMODELS/armijosearch.h \
+		MLMODELS/fibonaccisearch.h \
 		MLMODELS/functionalrbf.h \
 		MLMODELS/gensolver.h \
+		MLMODELS/goldensearch.h \
+		MLMODELS/gradientdescent.h \
 		MLMODELS/kmeans.h \
 		MLMODELS/knn.h \
+		MLMODELS/linesearch.h \
 		MLMODELS/mapper.h \
 		MLMODELS/matrix_functions.h \
 		MLMODELS/model.h \
@@ -250,10 +265,15 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		GRS/rlsprogram.cc \
 		MLMODELS/Rbf.cc \
 		MLMODELS/airbf.cpp \
+		MLMODELS/armijosearch.cpp \
+		MLMODELS/fibonaccisearch.cpp \
 		MLMODELS/functionalrbf.cpp \
 		MLMODELS/gensolver.cc \
+		MLMODELS/goldensearch.cpp \
+		MLMODELS/gradientdescent.cpp \
 		MLMODELS/kmeans.cc \
 		MLMODELS/knn.cc \
+		MLMODELS/linesearch.cpp \
 		MLMODELS/mapper.cc \
 		MLMODELS/matrix_functions.cc \
 		MLMODELS/model.cc \
@@ -462,8 +482,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents CORE/collection.h CORE/dataset.h CORE/parameter.h CORE/parameterlist.h CORE/problem.h GE/cprogram.h GE/doublestack.h GE/f2c.h GE/fparser.hh GE/fpconfig.hh GE/fptypes.hh GE/integeranneal.h GE/nnprogram.h GE/population.h GE/program.h GE/rule.h GE/symbol.h GRS/grs.h GRS/grspopulation.h GRS/rlsprogram.h MLMODELS/Rbf.h MLMODELS/airbf.h MLMODELS/functionalrbf.h MLMODELS/gensolver.h MLMODELS/kmeans.h MLMODELS/knn.h MLMODELS/mapper.h MLMODELS/matrix_functions.h MLMODELS/model.h MLMODELS/neural.h MLMODELS/rbf_model.h $(DISTDIR)/
-	$(COPY_FILE) --parents CORE/collection.cc CORE/dataset.cpp CORE/parameter.cpp CORE/parameterlist.cpp CORE/problem.cc GE/cprogram.cc GE/doublestack.cc GE/fparser.cc GE/fpoptimizer.cc GE/integeranneal.cpp GE/nnprogram.cc GE/population.cc GE/program.cc GE/rule.cc GE/symbol.cc GRS/grs.cc GRS/grspopulation.cc GRS/rlsprogram.cc MLMODELS/Rbf.cc MLMODELS/airbf.cpp MLMODELS/functionalrbf.cpp MLMODELS/gensolver.cc MLMODELS/kmeans.cc MLMODELS/knn.cc MLMODELS/mapper.cc MLMODELS/matrix_functions.cc MLMODELS/model.cc MLMODELS/neural.cc MLMODELS/rbf_model.cc MLMODELS/tolmin.cc main.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents CORE/collection.h CORE/dataset.h CORE/parameter.h CORE/parameterlist.h CORE/problem.h GE/cprogram.h GE/doublestack.h GE/f2c.h GE/fparser.hh GE/fpconfig.hh GE/fptypes.hh GE/integeranneal.h GE/nnprogram.h GE/population.h GE/program.h GE/rule.h GE/symbol.h GRS/grs.h GRS/grspopulation.h GRS/rlsprogram.h MLMODELS/Rbf.h MLMODELS/airbf.h MLMODELS/armijosearch.h MLMODELS/fibonaccisearch.h MLMODELS/functionalrbf.h MLMODELS/gensolver.h MLMODELS/goldensearch.h MLMODELS/gradientdescent.h MLMODELS/kmeans.h MLMODELS/knn.h MLMODELS/linesearch.h MLMODELS/mapper.h MLMODELS/matrix_functions.h MLMODELS/model.h MLMODELS/neural.h MLMODELS/rbf_model.h $(DISTDIR)/
+	$(COPY_FILE) --parents CORE/collection.cc CORE/dataset.cpp CORE/parameter.cpp CORE/parameterlist.cpp CORE/problem.cc GE/cprogram.cc GE/doublestack.cc GE/fparser.cc GE/fpoptimizer.cc GE/integeranneal.cpp GE/nnprogram.cc GE/population.cc GE/program.cc GE/rule.cc GE/symbol.cc GRS/grs.cc GRS/grspopulation.cc GRS/rlsprogram.cc MLMODELS/Rbf.cc MLMODELS/airbf.cpp MLMODELS/armijosearch.cpp MLMODELS/fibonaccisearch.cpp MLMODELS/functionalrbf.cpp MLMODELS/gensolver.cc MLMODELS/goldensearch.cpp MLMODELS/gradientdescent.cpp MLMODELS/kmeans.cc MLMODELS/knn.cc MLMODELS/linesearch.cpp MLMODELS/mapper.cc MLMODELS/matrix_functions.cc MLMODELS/model.cc MLMODELS/neural.cc MLMODELS/rbf_model.cc MLMODELS/tolmin.cc main.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -662,6 +682,16 @@ airbf.o: MLMODELS/airbf.cpp MLMODELS/airbf.h \
 		CORE/dataset.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o airbf.o MLMODELS/airbf.cpp
 
+armijosearch.o: MLMODELS/armijosearch.cpp MLMODELS/armijosearch.h \
+		MLMODELS/linesearch.h \
+		CORE/problem.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o armijosearch.o MLMODELS/armijosearch.cpp
+
+fibonaccisearch.o: MLMODELS/fibonaccisearch.cpp MLMODELS/fibonaccisearch.h \
+		MLMODELS/linesearch.h \
+		CORE/problem.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o fibonaccisearch.o MLMODELS/fibonaccisearch.cpp
+
 functionalrbf.o: MLMODELS/functionalrbf.cpp MLMODELS/functionalrbf.h \
 		CORE/dataset.h \
 		MLMODELS/model.h \
@@ -679,6 +709,21 @@ gensolver.o: MLMODELS/gensolver.cc MLMODELS/gensolver.h \
 		CORE/dataset.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o gensolver.o MLMODELS/gensolver.cc
 
+goldensearch.o: MLMODELS/goldensearch.cpp MLMODELS/goldensearch.h \
+		MLMODELS/linesearch.h \
+		CORE/problem.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o goldensearch.o MLMODELS/goldensearch.cpp
+
+gradientdescent.o: MLMODELS/gradientdescent.cpp MLMODELS/gradientdescent.h \
+		CORE/problem.h \
+		MLMODELS/linesearch.h \
+		MLMODELS/fibonaccisearch.h \
+		MLMODELS/goldensearch.h \
+		MLMODELS/armijosearch.h \
+		CORE/parameterlist.h \
+		CORE/parameter.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o gradientdescent.o MLMODELS/gradientdescent.cpp
+
 kmeans.o: MLMODELS/kmeans.cc MLMODELS/kmeans.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o kmeans.o MLMODELS/kmeans.cc
 
@@ -690,6 +735,10 @@ knn.o: MLMODELS/knn.cc MLMODELS/knn.h \
 		CORE/dataset.h \
 		MLMODELS/gensolver.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o knn.o MLMODELS/knn.cc
+
+linesearch.o: MLMODELS/linesearch.cpp MLMODELS/linesearch.h \
+		CORE/problem.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o linesearch.o MLMODELS/linesearch.cpp
 
 mapper.o: MLMODELS/mapper.cc MLMODELS/mapper.h \
 		GE/fparser.hh \

@@ -243,8 +243,8 @@ double	Problem::getGRMS(Data x,Data g)
 	for(int i=0;i<dimension;i++)
 	{
 		double v=g[i];
-		if(fabs(x[i]-lmargin[i])<1e-8 && g[i]>0) v=0.0;
-		if(fabs(x[i]-rmargin[i])<1e-8 && g[i]<0) v=0.0;
+        //if(fabs(x[i]-lmargin[i])<1e-8 && g[i]>0) v=0.0;
+        //if(fabs(x[i]-rmargin[i])<1e-8 && g[i]<0) v=0.0;
 		s+=v*v;
 	}
 	return sqrt(1.0/dimension * s);
