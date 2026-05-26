@@ -50,7 +50,7 @@ void makeMainParams()
     mainParamList.addParam(Parameter("fc_trainfile","","Used train file"));
     mainParamList.addParam(Parameter("fc_testfile","","Used test file"));
     QStringList modelList;
-    modelList<<"rbf"<<"neural"<<"airbf"<<"knn"<<"frbf";
+    modelList<<"rbf"<<"neural"<<"airbf"<<"knn"<<"frbf"<<"mrbf";
     mainParamList.addParam(Parameter("fc_model",modelList[0],modelList,"Used model for feature construction"));
     QStringList localList;
     localList<<"none"<<"crossover"<<"mutate"<<"de"<<"siman"<<"gd"<<"adam";
@@ -329,6 +329,9 @@ void run()
     else
         if(mainParamList.getParam("fc_model").getValue()=="airbf")
         model_type=MODEL_AIRBF;
+    else
+        if(mainParamList.getParam("fc_model").getValue()=="mrbf")
+            model_type=MODEL_MRBF;
     else
         if(mainParamList.getParam("fc_model").getValue()=="frbf")
             model_type=MODEL_FRBF;

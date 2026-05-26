@@ -1,4 +1,5 @@
 # include <GE/nnprogram.h>
+# include <RbfNetwork/rbf.h>
 NNprogram::NNprogram(int type,int pdimension,
                      Dataset *train,Dataset *test)
 {
@@ -16,6 +17,9 @@ NNprogram::NNprogram(int type,int pdimension,
     else
         if(type==MODEL_FRBF)
         model = new FunctionalRbf(mapper);
+    else
+        if(type==MODEL_MRBF)
+        model = new RbfNetwork(mapper);
 	else
 		model = new KNN(mapper);
 	pattern_dimension = pdimension;

@@ -44,7 +44,6 @@ SOURCES += \
         MLMODELS/gensolver.cc \
         MLMODELS/goldensearch.cpp \
         MLMODELS/gradientdescent.cpp \
-        MLMODELS/kmeans.cc \
         MLMODELS/knn.cc \
         MLMODELS/linesearch.cpp \
         MLMODELS/mapper.cc \
@@ -53,6 +52,8 @@ SOURCES += \
         MLMODELS/neural.cc \
         MLMODELS/rbf_model.cc \
         MLMODELS/tolmin.cc \
+        RbfNetwork/kmeans.cpp \
+        RbfNetwork/rbf.cpp \
         main.cpp
 
 HEADERS += \
@@ -84,11 +85,12 @@ HEADERS += \
     MLMODELS/gensolver.h \
     MLMODELS/goldensearch.h \
     MLMODELS/gradientdescent.h \
-    MLMODELS/kmeans.h \
     MLMODELS/knn.h \
     MLMODELS/linesearch.h \
     MLMODELS/mapper.h \
     MLMODELS/matrix_functions.h \
     MLMODELS/model.h \
     MLMODELS/neural.h \
-    MLMODELS/rbf_model.h
+    MLMODELS/rbf_model.h \
+    RbfNetwork/kmeans.h \
+    RbfNetwork/rbf.h

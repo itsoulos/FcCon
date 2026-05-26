@@ -17,6 +17,7 @@ using namespace std;
 # define MODEL_KNN		3
 # define MODEL_AIRBF     4
 # define MODEL_FRBF      5
+# define MODEL_MRBF      6
 
 class NNprogram	:public Program
 {

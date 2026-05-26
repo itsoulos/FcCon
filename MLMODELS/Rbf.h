@@ -5,8 +5,12 @@
 #include <string.h>
 
 #include "matrix_functions.h"
-#include "kmeans.h"
 
+void Kmeans(double * data_vectors, double * centers,
+            double * variances, int m, int n, int K);
+
+void myKmeans(double * data_vectors, double * centers,
+              double * variances, int m, int n, int K);
 /* -------------------------------------------- */
 /* Trains an RBF Neural Netowrk                 */
 /* Input Parameters:                            */
