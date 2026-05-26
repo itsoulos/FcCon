@@ -14,7 +14,7 @@ EQ            = =
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
+DEFINES       = -DADEPT_RECORDING_PAUSABLE -DADEPTSTORAGETHREADSAFE -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O4 -fopenmp -march=native -unroll-loops -omit-frame-pointer -Winline -unsafe-math-optimizations -mtune=native -ffast-math -Ofast -O2 -O4 -fopenmp -march=native -unroll-loops -omit-frame-pointer -Winline -unsafe-math-optimizations -mtune=native -ffast-math -Ofast -std=c++11 -Wall -Wextra -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -O4 -fopenmp -march=native -unroll-loops -omit-frame-pointer -Winline -unsafe-math-optimizations -mtune=native -ffast-math -Ofast -fopenmp -O2 -O4 -fopenmp -march=native -unroll-loops -omit-frame-pointer -Winline -unsafe-math-optimizations -mtune=native -ffast-math -fopt-info -Ofast -std=c++11 -std=gnu++1z -Wall -Wextra -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I. -I/usr/include/eigen3 -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++
@@ -40,7 +40,7 @@ DISTNAME      = FcCon1.0.0
 DISTDIR = /home/sheridan/Desktop/ERGASIES/FcCon/.tmp/FcCon1.0.0
 LINK          = g++
 LFLAGS        = -fopenmp -Wl,-O1
-LIBS          = $(SUBLIBS) /usr/lib/x86_64-linux-gnu/libQt5Widgets.so /usr/lib/x86_64-linux-gnu/libQt5Gui.so /usr/lib/x86_64-linux-gnu/libQt5Core.so -lGL -lpthread   
+LIBS          = $(SUBLIBS) -ladept -larmadillo /usr/lib/x86_64-linux-gnu/libQt5Widgets.so /usr/lib/x86_64-linux-gnu/libQt5Gui.so /usr/lib/x86_64-linux-gnu/libQt5Core.so -lGL -lpthread   
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -72,6 +72,7 @@ SOURCES       = CORE/collection.cc \
 		GRS/rlsprogram.cc \
 		MLMODELS/Rbf.cc \
 		MLMODELS/airbf.cpp \
+		MLMODELS/functionalrbf.cpp \
 		MLMODELS/gensolver.cc \
 		MLMODELS/kmeans.cc \
 		MLMODELS/knn.cc \
@@ -102,6 +103,7 @@ OBJECTS       = collection.o \
 		rlsprogram.o \
 		Rbf.o \
 		airbf.o \
+		functionalrbf.o \
 		gensolver.o \
 		kmeans.o \
 		knn.o \
@@ -148,7 +150,6 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_nfc.pri \
-		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions_private.pri \
@@ -220,6 +221,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		GRS/rlsprogram.h \
 		MLMODELS/Rbf.h \
 		MLMODELS/airbf.h \
+		MLMODELS/functionalrbf.h \
 		MLMODELS/gensolver.h \
 		MLMODELS/kmeans.h \
 		MLMODELS/knn.h \
@@ -247,6 +249,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		GRS/rlsprogram.cc \
 		MLMODELS/Rbf.cc \
 		MLMODELS/airbf.cpp \
+		MLMODELS/functionalrbf.cpp \
 		MLMODELS/gensolver.cc \
 		MLMODELS/kmeans.cc \
 		MLMODELS/knn.cc \
@@ -304,7 +307,6 @@ Makefile: FcCon.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf /
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_nfc.pri \
-		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions_private.pri \
@@ -392,7 +394,6 @@ Makefile: FcCon.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf /
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_network_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_nfc.pri:
-/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_opengl_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_openglextensions_private.pri:
@@ -458,8 +459,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents CORE/collection.h CORE/dataset.h CORE/parameter.h CORE/parameterlist.h CORE/problem.h GE/cprogram.h GE/doublestack.h GE/f2c.h GE/fparser.hh GE/fpconfig.hh GE/fptypes.hh GE/integeranneal.h GE/nnprogram.h GE/population.h GE/program.h GE/rule.h GE/symbol.h GRS/grs.h GRS/grspopulation.h GRS/rlsprogram.h MLMODELS/Rbf.h MLMODELS/airbf.h MLMODELS/gensolver.h MLMODELS/kmeans.h MLMODELS/knn.h MLMODELS/mapper.h MLMODELS/matrix_functions.h MLMODELS/model.h MLMODELS/neural.h MLMODELS/rbf_model.h $(DISTDIR)/
-	$(COPY_FILE) --parents CORE/collection.cc CORE/dataset.cpp CORE/parameter.cpp CORE/parameterlist.cpp CORE/problem.cc GE/cprogram.cc GE/doublestack.cc GE/fparser.cc GE/fpoptimizer.cc GE/integeranneal.cpp GE/nnprogram.cc GE/population.cc GE/program.cc GE/rule.cc GE/symbol.cc GRS/grs.cc GRS/grspopulation.cc GRS/rlsprogram.cc MLMODELS/Rbf.cc MLMODELS/airbf.cpp MLMODELS/gensolver.cc MLMODELS/kmeans.cc MLMODELS/knn.cc MLMODELS/mapper.cc MLMODELS/matrix_functions.cc MLMODELS/model.cc MLMODELS/neural.cc MLMODELS/rbf_model.cc MLMODELS/tolmin.cc main.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents CORE/collection.h CORE/dataset.h CORE/parameter.h CORE/parameterlist.h CORE/problem.h GE/cprogram.h GE/doublestack.h GE/f2c.h GE/fparser.hh GE/fpconfig.hh GE/fptypes.hh GE/integeranneal.h GE/nnprogram.h GE/population.h GE/program.h GE/rule.h GE/symbol.h GRS/grs.h GRS/grspopulation.h GRS/rlsprogram.h MLMODELS/Rbf.h MLMODELS/airbf.h MLMODELS/functionalrbf.h MLMODELS/gensolver.h MLMODELS/kmeans.h MLMODELS/knn.h MLMODELS/mapper.h MLMODELS/matrix_functions.h MLMODELS/model.h MLMODELS/neural.h MLMODELS/rbf_model.h $(DISTDIR)/
+	$(COPY_FILE) --parents CORE/collection.cc CORE/dataset.cpp CORE/parameter.cpp CORE/parameterlist.cpp CORE/problem.cc GE/cprogram.cc GE/doublestack.cc GE/fparser.cc GE/fpoptimizer.cc GE/integeranneal.cpp GE/nnprogram.cc GE/population.cc GE/program.cc GE/rule.cc GE/symbol.cc GRS/grs.cc GRS/grspopulation.cc GRS/rlsprogram.cc MLMODELS/Rbf.cc MLMODELS/airbf.cpp MLMODELS/functionalrbf.cpp MLMODELS/gensolver.cc MLMODELS/kmeans.cc MLMODELS/knn.cc MLMODELS/mapper.cc MLMODELS/matrix_functions.cc MLMODELS/model.cc MLMODELS/neural.cc MLMODELS/rbf_model.cc MLMODELS/tolmin.cc main.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -569,6 +570,7 @@ nnprogram.o: GE/nnprogram.cc GE/nnprogram.h \
 		MLMODELS/Rbf.h \
 		MLMODELS/matrix_functions.h \
 		MLMODELS/kmeans.h \
+		MLMODELS/functionalrbf.h \
 		MLMODELS/knn.h \
 		MLMODELS/airbf.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o nnprogram.o GE/nnprogram.cc
@@ -594,6 +596,7 @@ population.o: GE/population.cc GE/population.h \
 		MLMODELS/Rbf.h \
 		MLMODELS/matrix_functions.h \
 		MLMODELS/kmeans.h \
+		MLMODELS/functionalrbf.h \
 		MLMODELS/knn.h \
 		MLMODELS/airbf.h \
 		GE/integeranneal.h
@@ -655,6 +658,14 @@ airbf.o: MLMODELS/airbf.cpp MLMODELS/airbf.h \
 		GE/fparser.hh \
 		CORE/dataset.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o airbf.o MLMODELS/airbf.cpp
+
+functionalrbf.o: MLMODELS/functionalrbf.cpp MLMODELS/functionalrbf.h \
+		CORE/dataset.h \
+		MLMODELS/model.h \
+		CORE/problem.h \
+		MLMODELS/mapper.h \
+		GE/fparser.hh
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o functionalrbf.o MLMODELS/functionalrbf.cpp
 
 gensolver.o: MLMODELS/gensolver.cc MLMODELS/gensolver.h \
 		CORE/problem.h \
@@ -739,6 +750,7 @@ main.o: main.cpp CORE/parameterlist.h \
 		MLMODELS/Rbf.h \
 		MLMODELS/matrix_functions.h \
 		MLMODELS/kmeans.h \
+		MLMODELS/functionalrbf.h \
 		MLMODELS/knn.h \
 		MLMODELS/airbf.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp

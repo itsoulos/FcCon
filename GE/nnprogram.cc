@@ -13,6 +13,9 @@ NNprogram::NNprogram(int type,int pdimension,
     else
         if(type==MODEL_AIRBF)
         model=new AiRbf(mapper);
+    else
+        if(type==MODEL_FRBF)
+        model = new FunctionalRbf(mapper);
 	else
 		model = new KNN(mapper);
 	pattern_dimension = pdimension;

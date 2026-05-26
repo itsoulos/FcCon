@@ -8,6 +8,7 @@
 # include <QFile>
 # include <CORE/dataset.h>
 
+
 NNprogram *p=NULL;
 Population *pop=NULL;
 Dataset *trainSet = NULL;
@@ -49,7 +50,7 @@ void makeMainParams()
     mainParamList.addParam(Parameter("fc_trainfile","","Used train file"));
     mainParamList.addParam(Parameter("fc_testfile","","Used test file"));
     QStringList modelList;
-    modelList<<"rbf"<<"neural"<<"airbf"<<"knn";
+    modelList<<"rbf"<<"neural"<<"airbf"<<"knn"<<"frbf";
     mainParamList.addParam(Parameter("fc_model",modelList[0],modelList,"Used model for feature construction"));
     QStringList localList;
     localList<<"none"<<"crossover"<<"mutate"<<"de"<<"siman"<<"gd"<<"adam";
@@ -244,7 +245,7 @@ void runNeural(int iter,double &testError,double &classError,
     avg_fscore/=total_runs;
     //make red report
     red();
-    printf("NEURAL. TEST ERROR: %10.5lg CLASS ERROR: %10.5lg%%\n",testError,classError*100.0);
+    printf("NEURAL. TEST ERROR: %10.5lg CLASS ERROR: %10.5lg%%\n",testError,classError*1.0);
     printf("NEURAL. PRECISION %10.5lg RECALL %10.5lg FSCORE %10.5lg\n",
            avg_precision,avg_recall,avg_fscore);
     reset();
@@ -328,6 +329,9 @@ void run()
     else
         if(mainParamList.getParam("fc_model").getValue()=="airbf")
         model_type=MODEL_AIRBF;
+    else
+        if(mainParamList.getParam("fc_model").getValue()=="frbf")
+            model_type=MODEL_FRBF;
     int pattern_dimension = mainParamList.getParam("fc_dimension").getValue().toInt();
     int pcount = mainParamList.getParam("fc_chromosomes").getValue().toInt();
     int length = mainParamList.getParam("fc_length").getValue().toInt();

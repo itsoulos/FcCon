@@ -280,14 +280,14 @@ void        Population::nextGeneration()
 	calcFitnessArray();
 
 	select();
-        /*if((generation+1)%20==0)
+        if((generation+1)%20==0)
         {
         for(int i=0;i<5;i++)
         localSearch(i==0?0:rand()%genome_count);
 	    select();
-    	}*/
+        }
 
-        //if((generation+1)%10==0)
+        if((generation+1)%5==0)
         {
             for(int i=0;i<5;i++)
                 crossItem(i==0?0:rand() % genome_count);
