@@ -32,14 +32,26 @@ double FunctionalRbf::train1()
         if(!found)
             dclass.push_back(ypoint[i]);
     }
-    centers.resize(nodes * xpoint[0].size());
-    variances.resize(nodes * xpoint[0].size());
+    if(centers.size()!=nodes * xpoint[0].size())
+    {
+        centers.resize(nodes * xpoint[0].size());
+        variances.resize(nodes * xpoint[0].size());
+        weight.resize(centers.size()+variances.size()+nodes);
+    }
     Kmeans(xinput,centers,variances,xpoint.size(),xpoint[0].size(),
            nodes,
            num_of_cluster_members);
     bool ok;
-
-    weight.resize(centers.size()+variances.size()+nodes);
+    vector<int> missed,belong;
+    vector<double> dclass = trainSet->getPatternClass();
+    missed.resize(dclass.size());
+    belong.resize(dclass.size());
+    double dsum = 0.0;
+    for(int i=0;i<(int)missed.size();i++)
+    {
+        missed[i]=0;
+        belong[i]=0;
+    }
     icount = 0;
     for(int i=0;i<centers.size();i++)
         weight[icount++]=centers[i];
@@ -49,13 +61,23 @@ double FunctionalRbf::train1()
     Linear = train(weight,ok);
     if(!ok) return 1e+100;
 
+    arma::vec neuronOuts(nodes);
+
     for(unsigned i = 0; i < xpoint.size(); i++){
         Data pattern = xpoint[i];
-        arma::vec neuronOuts(nodes);
         for(unsigned j = 0; j < nodes;j++){
             neuronOuts[j] = neuronOutput(weight,pattern,pattern.size(),j);
         }
         double tempOut = arma::dot(neuronOuts,Linear);
+
+        int c1 = trainSet->nearestClassIndex(tempOut);
+        int c2 = trainSet->nearestClassIndex(ypoint[i]);
+        if(fabs(c1-c2)>1e-5)
+        {
+            missed[(int)c2]++;
+            dsum+=1.0;
+        }
+        belong[(int)c2]++;
         errorSum += ( tempOut - ypoint[i] ) * ( tempOut - ypoint[i] );
     }
     if(fabs(errorSum)>1e+8) return 1e+100;
@@ -63,6 +85,15 @@ double FunctionalRbf::train1()
     {
         weight[icount++]=Linear(i);
     }
+    double sum2=0.0;
+    for(int i=0;i<(int)missed.size();i++)
+    {
+        double dc = missed[i]*100.0/belong[i];
+        sum2+=dc;
+    }
+    sum2=sum2/dclass.size();
+    if(fc_balanceclass) return sum2;
+    if(fc_enableclassfitness) return dsum*100.0/ypoint.size();
     return errorSum;
 }
 
@@ -292,7 +323,10 @@ double FunctionalRbf::neuronOutput( vector<double> &x, vector<double> &patt, uns
     for(unsigned i = 0; i < pattDim;i++){
         out += (patt[i] - x[offset*pattDim + i]) * (patt[i] - x[offset*pattDim + i]);
     }
+    if(fabs(x[nodes*pattDim+offset])<1e-6) return 1e+100;
     double df=(-out / (x[nodes*pattDim+offset] * x[nodes*pattDim+offset]) );
+    if(fabs(df)>20) return 1e+100;
+
     return exp(df);
 }
 

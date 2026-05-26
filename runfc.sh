@@ -25,7 +25,7 @@ MODEL=frbf ##Values: rbf,neural,airbf,frbf
 ## The local optimization procedure
 LOCAL=mutate ##Values: none,crossover,mutate,de,siman,gd,adam
 ## Enable or disable the balanced class fitness
-BALANCECLASS=no
+BALANCECLASS=yes
 ## Enable or disable the usage of SMOTE
 ENABLESMOTE=no
 ## Enable or disable the usage of Geometric Mean
