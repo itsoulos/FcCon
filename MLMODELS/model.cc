@@ -94,7 +94,10 @@ void    Model::setTrainSet(Dataset *t)
     if(fc_enablesmote)
         trainSet->makeSmote();
     if(fc_enablenorm)
+    {
         trainSet->normalizeMean();
+	trainSet->saveData("norm.train");
+    }
         //trainSet->normalizeMinMax();
     xall = trainSet->getAllXpoint();
 }
@@ -104,7 +107,10 @@ void    Model::setTestSet(Dataset *t)
     extern bool fc_enablenorm;
     testSet = t;
     if(fc_enablenorm)
+    {
         testSet->normalizeMean();
+	testSet->saveData("norm.test");
+    }
         //testSet->normalizeMinMax();
 }
 
