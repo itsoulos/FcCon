@@ -22,13 +22,13 @@ private:
     double initialRight= 100.0;
     int failCount=0;
     int normalTrain=0;
-    double *xinput=0;
     double *yinput=0;
     vector<int> num_of_cluster_members;
+    Data params;
 
     Data centers,variances;
     Data weight;
-    void Kmeans(double * data_vectors,
+    void Kmeans(vector<double> & data_vectors,
                 vector<double> &centers,
                 vector<double> &variances,
                 int m, int n, int K,

@@ -598,7 +598,9 @@ nnprogram.o: GE/nnprogram.cc GE/nnprogram.h \
 		MLMODELS/matrix_functions.h \
 		MLMODELS/functionalrbf.h \
 		MLMODELS/knn.h \
-		MLMODELS/airbf.h
+		MLMODELS/airbf.h \
+		RbfNetwork/rbf.h \
+		RbfNetwork/kmeans.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o nnprogram.o GE/nnprogram.cc
 
 population.o: GE/population.cc GE/population.h \
@@ -792,8 +794,12 @@ kmeans.o: RbfNetwork/kmeans.cpp RbfNetwork/kmeans.h \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o kmeans.o RbfNetwork/kmeans.cpp
 
 rbf.o: RbfNetwork/rbf.cpp RbfNetwork/rbf.h \
+		RbfNetwork/kmeans.h \
 		CORE/dataset.h \
-		RbfNetwork/kmeans.h
+		MLMODELS/model.h \
+		CORE/problem.h \
+		MLMODELS/mapper.h \
+		GE/fparser.hh
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o rbf.o RbfNetwork/rbf.cpp
 
 main.o: main.cpp CORE/parameterlist.h \

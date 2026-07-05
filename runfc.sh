@@ -15,15 +15,15 @@ DATAFILE=$1
 ## Number of constructed features
 DIMENSION=$2
 ## Number of weights used in the construction process
-WEIGHTS=10
+WEIGHTS=20
 ## The name of  input train file
 TRAINFILE=$DATAPATH/$DATAFILE.train
 ## The name of  input test file
 TESTFILE=$DATAPATH/$DATAFILE.test
 ## The model used for feature construction
-MODEL=mrbf ##Values: rbf,neural,airbf,frbf,mrbf
+MODEL=rbf ##Values: rbf,neural,airbf,frbf,mrbf
 ## The local optimization procedure
-LOCAL=none ##Values: none,crossover,mutate,de,siman,gd,adam
+LOCAL=mutate ##Values: none,crossover,mutate,de,siman,gd,adam
 ## Enable or disable the balanced class fitness
 BALANCECLASS=no
 ## Enable or disable the usage of SMOTE

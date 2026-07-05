@@ -280,16 +280,22 @@ void        Population::nextGeneration()
 	calcFitnessArray();
 
 	select();
-        if((generation+1)%20==0)
+        if((generation+1)%50==0)
         {
-        for(int i=0;i<5;i++)
+
+        for(int i=0;i<1;i++)
+            /*{
+                if(i==0)
+                localSearch(0);
+                else crossItem(rand()%genome_count);
+            }*/
         localSearch(i==0?0:rand()%genome_count);
 	    select();
         }
 
-        if((generation+1)%5==0)
+        if((generation+1)%10==0)
         {
-            for(int i=0;i<5;i++)
+            for(int i=0;i<10;i++)
                 crossItem(i==0?0:rand() % genome_count);
         }
     select();
@@ -561,10 +567,15 @@ void        Population::crossItem(int pos)
             int gpos,cutpoint;
         again:
             gpos=rand() % genome_count;
+           /* for(int j=0;j<genome_size;j++)
+            {
+                g[j]=rand()%2==1?genome[pos][j]:genome[gpos][j];
+            }*/
+
             cutpoint=rand() % genome_size;
-		for(int j=0;j<cutpoint;j++) g[j]=genome[pos][j];
-		for(int j=cutpoint;j<genome_size;j++) g[j]=genome[gpos][j];
-		double f=fitness(g);
+        for(int j=0;j<cutpoint;j++) g[j]=genome[pos][j];
+        for(int j=cutpoint;j<genome_size;j++) g[j]=genome[gpos][j];
+        double f=fitness(g);
         if(fabs(f)>1e+10) goto again;
 		if(fabs(f)<fabs(fitness_array[pos]))
 		{
@@ -575,8 +586,13 @@ void        Population::crossItem(int pos)
 		}
 		else
 		{
-			for(int j=0;j<cutpoint;j++) g[j]=genome[gpos][j];
-			for(int j=cutpoint;j<genome_size;j++) g[j]=genome[pos][j];
+            /*for(int j=0;j<genome_size;j++)
+            {
+                g[j]=rand()%2==1?genome[gpos][j]:genome[pos][j];
+            }*/
+            cutpoint=rand() % genome_size;
+            for(int j=0;j<cutpoint;j++) g[j]=genome[gpos][j];
+            for(int j=cutpoint;j<genome_size;j++) g[j]=genome[pos][j];
 			double f=fitness(g);
 			if(fabs(f)<fabs(fitness_array[pos]))
 			{
@@ -597,7 +613,7 @@ void    	Population::mutateItem(int pos)
 	for(int i=0;i<genome_size;i++) g[i]=genome[pos][i];
     printf("LOCAL[%d] = ",pos);
     fflush(stdout);
-    //for(int j=0;j<10;j++)
+    for(int j=0;j<10;j++)
        for(int i=0;i<genome_size;i++)
        {
                 {

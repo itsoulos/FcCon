@@ -5,11 +5,8 @@ double FunctionalRbf::train1()
     extern bool fc_balanceclass;
     extern bool fc_enablemean;
     extern bool fc_enableclassfitness;
-    if(xinput == NULL)
-    {
-        xinput=new double[ xpoint.size() * xpoint[0].size()];
-        yinput=new double[ xpoint.size()];
-    }
+   	vector<double> xinput;
+	xinput.resize(xpoint.size() * xpoint[0].size());
     if(!mapTrainSet()) return 1e+100;
     nodes = num_weights;
 
@@ -18,7 +15,6 @@ double FunctionalRbf::train1()
     {
         for(int j=0;j<(int)xpoint[0].size();j++)
             xinput[icount++]=xpoint[i][j];
-        yinput[i]=ypoint[i];
         bool found=false;
         for(int j=0;j<(int)dclass.size();j++)
         {
@@ -36,7 +32,9 @@ double FunctionalRbf::train1()
     {
         centers.resize(nodes * xpoint[0].size());
         variances.resize(nodes * xpoint[0].size());
-        weight.resize(centers.size()+variances.size()+nodes);
+        params.resize(centers.size()+nodes);
+	setDimension(params.size());
+	dimension = params.size();
     }
     Kmeans(xinput,centers,variances,xpoint.size(),xpoint[0].size(),
            nodes,
@@ -46,27 +44,34 @@ double FunctionalRbf::train1()
     vector<double> dclass = trainSet->getPatternClass();
     missed.resize(dclass.size());
     belong.resize(dclass.size());
+    vector<double> errorPerClass;
+    errorPerClass.resize(dclass.size());
     double dsum = 0.0;
     for(int i=0;i<(int)missed.size();i++)
     {
         missed[i]=0;
         belong[i]=0;
+	errorPerClass[i]=0.0;
     }
     icount = 0;
     for(int i=0;i<centers.size();i++)
-        weight[icount++]=centers[i];
-    for(int i=0;i<variances.size();i++)
-        weight[icount++]=variances[i];
+        params[icount++]=centers[i];
+    for(int i=0;i<nodes;i++)
+    {
+	    double sum = 0.0;
+	    for(int j=0;j<xpoint[0].size();j++)
+		    sum+=variances[i*xpoint[0].size()+j];
+        params[icount++]=sum;
+    }
     double errorSum=0.0;
-    Linear = train(weight,ok);
-    if(!ok) return 1e+100;
-
+    Linear = train(params,ok);
+    if(!ok) return 1e+8;
     arma::vec neuronOuts(nodes);
 
     for(unsigned i = 0; i < xpoint.size(); i++){
         Data pattern = xpoint[i];
         for(unsigned j = 0; j < nodes;j++){
-            neuronOuts[j] = neuronOutput(weight,pattern,pattern.size(),j);
+            neuronOuts[j] = neuronOutput(params,pattern,pattern.size(),j);
         }
         double tempOut = arma::dot(neuronOuts,Linear);
 
@@ -78,22 +83,36 @@ double FunctionalRbf::train1()
             dsum+=1.0;
         }
         belong[(int)c2]++;
+	errorPerClass[(int)c2]+=pow(tempOut-ypoint[i],2.0);
         errorSum += ( tempOut - ypoint[i] ) * ( tempOut - ypoint[i] );
     }
-    if(fabs(errorSum)>1e+8) return 1e+100;
-    for(int i=0;i<nodes;i++)
-    {
-        weight[icount++]=Linear(i);
-    }
     double sum2=0.0;
+    double sum3=0.0;
     for(int i=0;i<(int)missed.size();i++)
     {
         double dc = missed[i]*100.0/belong[i];
         sum2+=dc;
+	sum3+=errorPerClass[i];
     }
     sum2=sum2/dclass.size();
+    sum3=sum3/dclass.size();
     if(fc_balanceclass) return sum2;
     if(fc_enableclassfitness) return dsum*100.0/ypoint.size();
+    extern bool fc_enablemean;
+    if(fc_enablemean)
+    {
+
+        double avg_precision,avg_recall,avg_fscore;
+        getPrecisionRecall(
+            trainSet,
+            avg_precision,
+            avg_recall,
+            avg_fscore);
+
+        double d = 0.5 *(dsum*100.0/ypoint.size()+100.0*(1.0-sqrt(avg_precision * avg_recall)));
+
+        return d;
+    }
     return errorSum;
 }
 
@@ -102,7 +121,7 @@ double  FunctionalRbf::train2()
     return train1();
 }
 
-void FunctionalRbf::Kmeans(double * data_vectors,
+void FunctionalRbf::Kmeans(vector<double> & data_vectors,
             vector<double> &centers,
             vector<double> &variances,
             int m, int n, int K,
@@ -112,8 +131,11 @@ void FunctionalRbf::Kmeans(double * data_vectors,
     int j=0;
     int l=0;
     int k=0;
-    double * new_centers = (double*)malloc(sizeof(double)*K*n);
+//    double * new_centers = (double*)malloc(sizeof(double)*K*n);
+    vector<double> new_centers;
+    new_centers.resize(K*n);
     int **cluster_members=new int*[K];
+
     for(int i=0;i<K;i++)
         cluster_members[i]=new int[m];
     num_of_cluster_members.resize(K);
@@ -287,7 +309,7 @@ void FunctionalRbf::Kmeans(double * data_vectors,
 
 
 
-    free(new_centers);
+//    free(new_centers);
     delete[] random_centers;
     for(int i=0;i<K;i++) delete[] cluster_members[i];
     delete[] cluster_members;
@@ -312,8 +334,10 @@ double  FunctionalRbf::output(Data &x)
 {
         Data pattern = x;
         arma::vec neuronOuts(nodes);
+
+	if(params.size()==0) return 1e+100;
         for(unsigned j = 0; j < nodes;j++){
-            neuronOuts[j] = neuronOutput(weight,pattern,pattern.size(),j);
+            neuronOuts[j] = neuronOutput(params,pattern,pattern.size(),j);
         }
         double tempOut = arma::dot(neuronOuts,Linear);
 	return tempOut;
@@ -323,9 +347,8 @@ double FunctionalRbf::neuronOutput( vector<double> &x, vector<double> &patt, uns
     for(unsigned i = 0; i < pattDim;i++){
         out += (patt[i] - x[offset*pattDim + i]) * (patt[i] - x[offset*pattDim + i]);
     }
-    if(fabs(x[nodes*pattDim+offset])<1e-6) return 1e+100;
     double df=(-out / (x[nodes*pattDim+offset] * x[nodes*pattDim+offset]) );
-    if(fabs(df)>20) return 1e+100;
+    if(fabs(df)>30) return 1e+100;
 
     return exp(df);
 }
@@ -438,9 +461,4 @@ FunctionalRbf::FunctionalRbf(Mapper *m)
 
 FunctionalRbf::~FunctionalRbf()
 {
-    if(xinput!=NULL)
-    {
-        delete[] xinput;
-        delete[] yinput;
-    }
 }
