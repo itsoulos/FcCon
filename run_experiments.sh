@@ -10,9 +10,9 @@ Usage: ./run_experiments.sh --dataset NAME [options]
   --dataset NAME          Dataset basename (resolves NAME.train and NAME.test)
   --train FILE            Training file (overrides --dataset)
   --test FILE             Test file (overrides --dataset)
-  --features N            Constructed features (default 1)
-  --runs N                Repetitions per pair (default 30)
-  --generations N         Generations (default 200)
+  --features N            Constructed features (default 2)
+  --runs N                Repetitions per pair (default 10)
+  --generations N         Generations (default 500)
   --print-every N         Print progress every N generations (default 10)
   --chromosomes N         Population size (default 500)
   --length N              Chromosome length (default 100)
@@ -26,7 +26,7 @@ Usage: ./run_experiments.sh --dataset NAME [options]
   --help                  Show help
 HELP
 }
-exe='./FcCon'; data_dir="$HOME/Desktop/ERGASIES/FeatureConstruction2/datasets/tenfolding"; dataset=''; train=''; test=''; features=1; runs=30; generations=200
+exe='./FcCon'; data_dir="$HOME/Desktop/ERGASIES/FeatureConstruction2/datasets/tenfolding"; dataset=''; train=''; test=''; features=2; runs=10; generations=500
 chromosomes=500; length=100; print_every=10; model='rbf'; local='none'; trials=20
 crossover='standard'; mutation='standard'; seed=1; out='results/fccon_results.csv'
 while (($#)); do
