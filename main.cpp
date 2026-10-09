@@ -17,6 +17,7 @@ Dataset *testSet  = NULL;
 int random_seed=1;
 int fc_iters=10;
 int fc_generations=200;
+int fc_print_every=10;
 int fc_chromosomes=500;
 int fc_length=100;
 int fc_dimension=1;
@@ -43,6 +44,7 @@ void makeMainParams()
     mainParamList.addParam(Parameter("fc_seed",1,1,100,"Random Seed"));
     mainParamList.addParam(Parameter("fc_iters",10,1,100,"GE iterations"));
     mainParamList.addParam(Parameter("fc_generations",200,10,1000,"Number of allowed generations"));
+    mainParamList.addParam(Parameter("fc_print_every",10,1,1000,"Progress output interval (generations)"));
     mainParamList.addParam(Parameter("fc_chromosomes",500,100,1000,"Number of chromosomes"));
     mainParamList.addParam(Parameter("fc_length",100,10,1000,"Chromosome length"));
     mainParamList.addParam(Parameter("fc_dimension",1,1,10,"Number of constructed features"));
@@ -52,6 +54,11 @@ void makeMainParams()
     QStringList modelList;
     modelList<<"rbf"<<"neural"<<"airbf"<<"knn"<<"frbf"<<"mrbf";
     mainParamList.addParam(Parameter("fc_model",modelList[0],modelList,"Used model for feature construction"));
+    QStringList crossList; crossList<<"none"<<"standard"<<"two_point"<<"uniform"<<"targeted"<<"targetedWorst";
+    mainParamList.addParam(Parameter("fc_crossover","standard",crossList,"Global crossover operator"));
+    QStringList mutationList; mutationList<<"none"<<"standard"<<"creep"<<"adaptive"<<"targeted"<<"targetedWorst";
+    mainParamList.addParam(Parameter("fc_mutation","standard",mutationList,"Mutation operator"));
+    mainParamList.addParam(Parameter("fc_operator_trials",20,1,1000,"Fitness-guided operator trials"));
     QStringList localList;
     localList<<"none"<<"crossover"<<"mutate"<<"de"<<"siman"<<"gd"<<"adam";
     mainParamList.addParam(Parameter("fc_local",localList[0],localList,"Used local search method"));
@@ -340,6 +347,7 @@ void run()
     int length = mainParamList.getParam("fc_length").getValue().toInt();
     int num_weights = mainParamList.getParam("fc_weights").getValue().toInt();
     int generations = mainParamList.getParam("fc_generations").getValue().toInt();
+    int print_every = mainParamList.getParam("fc_print_every").getValue().toInt();
 
     fc_balanceclass = mainParamList.getParam("fc_balanceclass").getValue()=="yes";
     fc_enablesmote  = mainParamList.getParam("fc_enablesmote").getValue()=="yes";
@@ -360,8 +368,10 @@ void run()
 	old3=fc_enablemean;
     old4=fc_enableclassfitness;
     old5=fc_enablenorm;
-    for(random_seed=1;random_seed<=total_runs;random_seed++)
+    int initial_seed = mainParamList.getParam("fc_seed").getValue().toInt();
+    for(int run_index=0;run_index<total_runs;run_index++)
     {
+        random_seed=initial_seed+run_index;
 	fc_balanceclass=old1;
 	fc_enablesmote=old2;
 	fc_enablemean=old3;
@@ -373,6 +383,9 @@ void run()
         p=new NNprogram(model_type,pattern_dimension,trainSet,testSet);
         pop=new Population(pcount,length,p);
         pop->setLocalMethod(mainParamList.getParam("fc_local").getValue().toStdString());
+        pop->setCrossMethod(mainParamList.getParam("fc_crossover").getValue().toStdString());
+        pop->setMutationMethod(mainParamList.getParam("fc_mutation").getValue().toStdString());
+        pop->setOperatorTrials(mainParamList.getParam("fc_operator_trials").getValue().toInt());
         p->getModel()->setPatternDimension(pattern_dimension);
         p->getModel()->setNumOfWeights(num_weights);
 
@@ -382,7 +395,7 @@ void run()
                 genome=pop->getBestGenome();
                 s=p->printF(genome);
                 p->fitness(genome);
-               // if(i%20==0)
+                if(i==1 || i%print_every==0 || i==generations || fabs(pop->getBestFitness())<1e-7)
                 {
                     printf("RUN: %d GENERATION=%d FITNESS=%.8lg\nPROGRAMS=\n%s",
                         random_seed,i,pop->getBestFitness(),s.c_str());
@@ -431,10 +444,13 @@ void run()
             best_fitness = fabs(pop->getBestFitness());
             bestgenome=pop->getBestGenome();
         }
-        if(random_seed!=total_runs)
+        if (run_index != total_runs - 1)
         {
-                delete p;
-                delete pop;
+            delete pop;
+            pop = nullptr;
+
+            delete p;
+            p = nullptr;
         }
     }
     //report

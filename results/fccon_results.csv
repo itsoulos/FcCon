@@ -1,0 +1,4 @@
+crossover,mutation,seed,returncode,log
+none,standard,1,0,results/fccon_results_none_standard_seed1.log
+none,standard,2,0,results/fccon_results_none_standard_seed2.log
+none,standard,3,0,results/fccon_results_none_standard_seed3.log

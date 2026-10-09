@@ -24,12 +24,19 @@ class Population
         void    	replaceWorst();
         int     elitism;
         string  localMethod="none";
+        string crossMethod="standard", mutationMethod="standard";
+        int operatorTrials=20;
+        void targetedCrossItem(int pos, bool worst);
+        void targetedMutateItem(int pos, bool worst);
         void    	localSearch(int gpos);
 	public:
 		Population(int gcount,int gsize,Program *p);
 		double 	fitness(vector<int> &g);
         void    	setElitism(int s);
         void    setLocalMethod(string s);
+        void setCrossMethod(string s) { crossMethod=s; }
+        void setMutationMethod(string s) { mutationMethod=s; }
+        void setOperatorTrials(int n) { operatorTrials=n; }
         int     getGeneration() const;
         int     getCount() const;
         int     getSize() const;

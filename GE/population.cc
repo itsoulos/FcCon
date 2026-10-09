@@ -150,6 +150,7 @@ void	 Population::select()
 /* There is 1 crossover point and it is random */
 void        Population::crossover()
 {
+    if (crossMethod == "none") return;
         int parent[2];
         int nchildren=(int)((1.0 - selection_rate) * genome_count);
 	if(!(nchildren%2==0)) nchildren++;
@@ -192,6 +193,19 @@ void        Population::crossover()
         std::copy(genome[parent[0]].begin() + pt1,
                   genome[parent[0]].end(),
                   children[count_children + 1].begin() + pt1);
+        if(crossMethod=="two_point" && genome_size>2) {
+            int a=rand()%genome_size, b=rand()%genome_size;
+            if(a>b) std::swap(a,b);
+            for(int k=a;k<b;k++) {
+                children[count_children][k]=genome[parent[1]][k];
+                children[count_children+1][k]=genome[parent[0]][k];
+            }
+        } else if(crossMethod=="uniform") {
+            for(int k=0;k<genome_size;k++) if(rand()%2) {
+                children[count_children][k]=genome[parent[1]][k];
+                children[count_children+1][k]=genome[parent[0]][k];
+            }
+        }
 		count_children+=2;
 		if(count_children>=nchildren) break;
 	}
@@ -209,6 +223,44 @@ void        Population::crossover()
 	}
 }
 
+// Fitness-guided block recombination, adapted to FcCon's feature fitness.
+// Unlike QGenClass, FcCon has no per-class semantic error interface.
+void Population::targetedCrossItem(int pos, bool worst) {
+    if(genome_size < 1 || genome_count < 2) return;
+    int donor = worst ? genome_count-1 : rand()%std::max(1,genome_count/5);
+    if(donor==pos) donor=(donor+1)%genome_count;
+    vector<int> best=genome[pos];
+    double score=fitness(best);
+    for(int t=0;t<operatorTrials;t++) {
+        vector<int> trial=best;
+        int a=rand()%genome_size;
+        int len=1+rand()%std::max(1,std::min(genome_size-a,genome_size/5));
+        std::copy(genome[donor].begin()+a,genome[donor].begin()+a+len,trial.begin()+a);
+        double f=fitness(trial);
+        if(std::isfinite(f) && f>score) {best=std::move(trial);score=f;}
+    }
+    genome[pos]=std::move(best);
+    fitness_array[pos]=score;
+}
+
+void Population::targetedMutateItem(int pos, bool worst) {
+    if(genome_size<1) return;
+    vector<int> best=genome[pos];
+    double score=fitness(best);
+    for(int t=0;t<operatorTrials;t++) {
+        vector<int> trial=best;
+        int j=rand()%genome_size;
+        if(worst) {
+            int width=std::max(1,genome_size/10);
+            for(int k=0;k<width;k++) trial[(j+k)%genome_size]=rand()%MAX_RULE;
+        } else trial[j]=rand()%MAX_RULE;
+        double f=fitness(trial);
+        if(std::isfinite(f) && f>score) {best=std::move(trial);score=f;}
+    }
+    genome[pos]=std::move(best);
+    fitness_array[pos]=score;
+}
+
 void        Population::setElitism(int s)
 {
 	elitism = s;
@@ -218,6 +270,7 @@ void        Population::setElitism(int s)
 /* Standard mutation algorithm: mutate all chromosomes in the population based on the mutation probability */
 void    	Population::mutate()
 {
+    if (mutationMethod == "none") return;
 	int start = elitism * (int)(genome_count*selection_rate);
 	start = elitism;
 	start = 1;
@@ -228,7 +281,13 @@ void    	Population::mutate()
 			double r=rand()*1.0/RAND_MAX;
 			if(r<mutation_rate)
 			{
-				genome[i][j]=rand() % MAX_RULE;
+                if(mutationMethod=="creep") {
+                    int step=(rand()%2)?1:-1;
+                    genome[i][j]=(genome[i][j]+step+MAX_RULE)%MAX_RULE;
+                } else if(mutationMethod=="adaptive") {
+                    int step=1+rand()%std::max(1,MAX_RULE/(generation+2));
+                    genome[i][j]=(genome[i][j]+((rand()%2)?step:-step)+MAX_RULE)%MAX_RULE;
+                } else genome[i][j]=rand()%MAX_RULE;
 			}
 		}
 	}
@@ -249,8 +308,8 @@ void    	Population::calcFitnessArray()
 		
         if((i+1)%20==0)
 		{
-			printf(" %d:%.5lg ",i+1,dmin);
-			fflush(stdout);
+	//		printf(" %d:%.5lg ",i+1,dmin);
+	//		fflush(stdout);
         }
 		
 	}
@@ -301,6 +360,15 @@ void        Population::nextGeneration()
     select();
     crossover();
     if(generation) mutate();
+    if(crossMethod=="targeted" || crossMethod=="targetedWorst" ||
+       mutationMethod=="targeted" || mutationMethod=="targetedWorst") {
+        calcFitnessArray();
+        select();
+        if(crossMethod=="targeted" || crossMethod=="targetedWorst")
+            targetedCrossItem(0,crossMethod=="targetedWorst");
+        if(mutationMethod=="targeted" || mutationMethod=="targetedWorst")
+            targetedMutateItem(0,mutationMethod=="targetedWorst");
+    }
     ++generation;
 }
 
