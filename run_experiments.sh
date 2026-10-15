@@ -19,11 +19,12 @@ Usage: ./run_experiments.sh --dataset NAME [options]
   --model NAME            Model (default rbf)
   --local NAME            Local search (default none)
   --trials N              Operator trials (default 20)
-  --crossover NAME|all    none,standard,two_point,uniform,targeted,targetedWorst
+  --crossover NAME|all    none,standard,two_point,uniform,targeted,targetedWorst,constants
   --mutation NAME|all     none,standard,creep,adaptive,targeted,targetedWorst
   --seed N                Initial seed (default 1)
   --out FILE              CSV results (default results/fccon_results.csv)
   --help                  Show help
+  Summary: results/fccon_results_summary.csv (mean and sample STD of CLASS error %)
 HELP
 }
 exe='./FcCon'; data_dir="$HOME/Desktop/ERGASIES/FeatureConstruction2/datasets/tenfolding"; dataset=''; train=''; test=''; features=2; runs=10; generations=500
@@ -74,7 +75,28 @@ if [[ $out != /* && $out != results/* ]]; then
 fi
 mkdir -p -- "$(dirname -- "$out")" || exit 2
 base=${out%.*}; [[ $base == "$out" ]] && base=$out
-printf 'crossover,mutation,seed,returncode,log\n' > "$out"
+printf 'crossover,mutation,seed,returncode,log,mlp_class_error_pct,rbf_class_error_pct\n' > "$out"
+summary="${base}_summary.csv"
+# Extract the CLASS error from the final NEURAL/RBF AVERAGES sections.
+# Do not confuse these with progress output or the individual TEST ERROR lines.
+extract_errors() {
+  awk '
+    /NEURAL AVERAGES/ { section="mlp"; next }
+    /RBF AVERAGES/    { section="rbf"; next }
+    section != "" && /TEST:/ && /CLASS:/ {
+      line=$0
+      sub(/^.*CLASS:[[:space:]]*/, "", line)
+      if (match(line, /^[0-9]+([.][0-9]+)?%?/)) {
+        value=substr(line, RSTART, RLENGTH)
+        sub(/%$/, "", value)
+        if (section == "mlp") mlp=value
+        if (section == "rbf") rbf=value
+      }
+      section=""
+    }
+    END { printf "%s,%s\n", mlp, rbf }
+  ' "$1"
+}
 exe=$(realpath -- "$exe"); train=$(realpath -- "$train"); test=$(realpath -- "$test")
 failed=0
 for c in "${cross_list[@]}"; do
@@ -90,10 +112,43 @@ for c in "${cross_list[@]}"; do
         "--fc_crossover=$c" "--fc_mutation=$m" "--fc_operator_trials=$trials" \
         2>&1 | tee "$log"
       status=${PIPESTATUS[0]}
-      printf '%s,%s,%s,%s,%s\n' "$c" "$m" "$current_seed" "$status" "$log" >> "$out"
+      mlp=''; rbf=''
+      if ((status == 0)); then
+        IFS=, read -r mlp rbf < <(extract_errors "$log")
+        if [[ ! $mlp =~ ^[0-9]+([.][0-9]+)?$ || ! $rbf =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+          echo "WARNING: Could not parse both CLASS errors from $log" >&2
+          mlp=''; rbf=''
+        fi
+      fi
+      printf '%s,%s,%s,%s,%s,%s,%s\n' "$c" "$m" "$current_seed" "$status" "$log" "$mlp" "$rbf" >> "$out"
       if ((status != 0)); then echo "FAILED ($status): $log" >&2; failed=$((failed+1)); fi
     done
   done
 done
-printf 'Finished. CSV: %s; failed runs: %d\n' "$out" "$failed"
+# Group by crossover/mutation. Exclude failed runs and incomplete metrics.
+awk -F, -v OFS=, '
+  NR == 1 { next }
+  $4 == 0 && $6 ~ /^[0-9]+([.][0-9]+)?$/ && $7 ~ /^[0-9]+([.][0-9]+)?$/ {
+    key=$1 SUBSEP $2
+    n[key]++
+    sm[key]+=$6; sr[key]+=$7
+    qm[key]+=$6*$6; qr[key]+=$7*$7
+    if (!(key in seen)) { seen[key]=1; order[++total]=key }
+  }
+  function std(sum,sumsq,count, variance) {
+    if (count < 2) return 0
+    variance=(sumsq-sum*sum/count)/(count-1)
+    return sqrt(variance > 0 ? variance : 0)
+  }
+  BEGIN { print "crossover","mutation","valid_runs","mlp_mean_pct","mlp_std_pct","rbf_mean_pct","rbf_std_pct" }
+  END {
+    for (i=1;i<=total;i++) {
+      key=order[i]; split(key,parts,SUBSEP)
+      printf "%s,%s,%d,%.6f,%.6f,%.6f,%.6f\n",parts[1],parts[2],n[key],sm[key]/n[key],std(sm[key],qm[key],n[key]),sr[key]/n[key],std(sr[key],qr[key],n[key])
+    }
+  }
+' "$out" > "$summary"
+printf '\nSUMMARY (classification error %%; sample STD):\n'
+if command -v column >/dev/null 2>&1; then column -s, -t "$summary"; else cat "$summary"; fi
+printf '\nFinished. CSV: %s; summary: %s; failed runs: %d\n' "$out" "$summary" "$failed"
 ((failed == 0))
