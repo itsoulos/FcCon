@@ -23,16 +23,18 @@ Usage: ./run_experiments.sh --dataset NAME [options]
   --mutation NAME|all     none,standard,creep,adaptive,targeted,targetedWorst
   --seed N                Initial seed (default 1)
   --out FILE              CSV results (default results/fccon_results.csv)
+  --summarize-only        Recalculate summary from existing CSV/logs (no FcCon runs)
   --help                  Show help
   Summary: results/fccon_results_summary.csv (mean and sample STD of CLASS error %)
 HELP
 }
 exe='./FcCon'; data_dir="$HOME/Desktop/ERGASIES/FeatureConstruction2/datasets/tenfolding"; dataset=''; train=''; test=''; features=2; runs=10; generations=500
 chromosomes=500; length=100; print_every=10; model='rbf'; local='none'; trials=20
-crossover='standard'; mutation='standard'; seed=1; out='results/fccon_results.csv'
+crossover='standard'; mutation='standard'; seed=1; out='results/fccon_results.csv'; summarize_only=0
 while (($#)); do
   case "$1" in
     --help|-h) usage; exit 0 ;;
+    --summarize-only) summarize_only=1; shift ;;
     --exe|--data-dir|--dataset|--train|--test|--features|--runs|--generations|--print-every|--chromosomes|--length|--model|--local|--trials|--crossover|--mutation|--seed|--out)
       if (($# < 2)); then echo "Missing value for $1" >&2; exit 2; fi
       key=${1#--}; key=${key//-/_}; printf -v "$key" '%s' "$2"; shift 2 ;;
@@ -56,12 +58,12 @@ for key in train test; do
     printf -v "$key" '%s' "$data_dir/$value"
   fi
 done
-if [[ -z $train || -z $test || ! -f $train || ! -f $test ]]; then
+if (( ! summarize_only )) && [[ -z $train || -z $test || ! -f $train || ! -f $test ]]; then
   echo "Training/test files not found. Dataset directory: $data_dir" >&2
   echo 'Use --dataset NAME, or --train FILE --test FILE, optionally with --data-dir DIR.' >&2
   exit 2
 fi
-if [[ ! -f $exe || ! -x $exe ]]; then echo "Executable not found/not executable: $exe" >&2; exit 2; fi
+if (( ! summarize_only )) && [[ ! -f $exe || ! -x $exe ]]; then echo "Executable not found/not executable: $exe" >&2; exit 2; fi
 allowed=(none standard two_point uniform targeted targetedWorst constants)
 mut_allowed=(none standard creep adaptive targeted targetedWorst)
 contains() { local needle=$1 x; shift; for x in "$@"; do [[ $needle == "$x" ]] && return 0; done; return 1; }
@@ -75,56 +77,71 @@ if [[ $out != /* && $out != results/* ]]; then
 fi
 mkdir -p -- "$(dirname -- "$out")" || exit 2
 base=${out%.*}; [[ $base == "$out" ]] && base=$out
-printf 'crossover,mutation,seed,returncode,log,mlp_class_error_pct,rbf_class_error_pct\n' > "$out"
 summary="${base}_summary.csv"
-# Extract the CLASS error from the final NEURAL/RBF AVERAGES sections.
-# Do not confuse these with progress output or the individual TEST ERROR lines.
+# Accept CLASS on the heading line or following lines, including ANSI/CR output.
 extract_errors() {
-  awk '
-    /NEURAL AVERAGES/ { section="mlp" }
-    /RBF AVERAGES/    { section="rbf" }
-    section != "" && /TEST:/ && /CLASS:/ {
+  awk '''
+    { gsub(/\033\[[0-9;]*[[:alpha:]]/, "", $0); gsub(/\r/, "", $0) }
+    /NEURAL[[:space:]]+AVERAGES/ { section="mlp" }
+    /RBF[[:space:]]+AVERAGES/ { section="rbf" }
+    section != "" && /CLASS[[:space:]]*:/ {
       line=$0
-      sub(/^.*CLASS:[[:space:]]*/, "", line)
-      if (match(line, /^[0-9]+([.][0-9]+)?%?/)) {
-        value=substr(line, RSTART, RLENGTH)
-        sub(/%$/, "", value)
-        if (section == "mlp") mlp=value
-        if (section == "rbf") rbf=value
+      sub(/^.*CLASS[[:space:]]*:[[:space:]]*/, "", line)
+      if (match(line, /^[-+]?[0-9]+([.][0-9]+)?/)) {
+        value=substr(line,RSTART,RLENGTH)
+        if (section=="mlp") mlp=value
+        else rbf=value
       }
       section=""
     }
     END { printf "%s,%s\n", mlp, rbf }
-  ' "$1"
+  ''' "$1"
 }
-exe=$(realpath -- "$exe"); train=$(realpath -- "$train"); test=$(realpath -- "$test")
-failed=0
-for c in "${cross_list[@]}"; do
-  for m in "${mut_list[@]}"; do
-    for ((run=0;run<runs;run++)); do
-      current_seed=$((10#$seed + run))
-      log="${base}_${c}_${m}_seed${current_seed}.log"
-      echo "$c / $m / seed $current_seed"
-      "$exe" "--fc_trainfile=$train" "--fc_testfile=$test" \
-        "--fc_dimension=$features" '--fc_iters=1' "--fc_seed=$current_seed" \
-        "--fc_generations=$generations" "--fc_print_every=$print_every" "--fc_chromosomes=$chromosomes" \
-        "--fc_length=$length" "--fc_model=$model" "--fc_local=$local" \
-        "--fc_crossover=$c" "--fc_mutation=$m" "--fc_operator_trials=$trials" \
-        2>&1 | tee "$log"
-      status=${PIPESTATUS[0]}
-      mlp=''; rbf=''
-      if ((status == 0)); then
-        IFS=, read -r mlp rbf < <(extract_errors "$log")
-        if [[ ! $mlp =~ ^[0-9]+([.][0-9]+)?$ || ! $rbf =~ ^[0-9]+([.][0-9]+)?$ ]]; then
-          echo "WARNING: Could not parse both CLASS errors from $log" >&2
-          mlp=''; rbf=''
-        fi
-      fi
-      printf '%s,%s,%s,%s,%s,%s,%s\n' "$c" "$m" "$current_seed" "$status" "$log" "$mlp" "$rbf" >> "$out"
-      if ((status != 0)); then echo "FAILED ($status): $log" >&2; failed=$((failed+1)); fi
+record_log() {
+  local c=$1 m=$2 current_seed=$3 status=$4 log=$5 mlp="" rbf=""
+  if [[ $status == 0 && -f $log ]]; then
+    IFS=, read -r mlp rbf < <(extract_errors "$log")
+    if [[ ! $mlp =~ ^[0-9]+([.][0-9]+)?$ || ! $rbf =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+      echo "WARNING: Could not parse both CLASS errors from $log" >&2
+      mlp=""; rbf=""
+    fi
+  fi
+  printf "%s,%s,%s,%s,%s,%s,%s\n" "$c" "$m" "$current_seed" "$status" "$log" "$mlp" "$rbf" >> "$out"
+}
+if (( summarize_only )); then
+  [[ -f $out ]] || { echo "CSV not found: $out" >&2; exit 2; }
+  old_csv=$(mktemp)
+  cp -- "$out" "$old_csv"
+  printf "crossover,mutation,seed,returncode,log,mlp_class_error_pct,rbf_class_error_pct\n" > "$out"
+  while IFS=, read -r c m current_seed status log _; do
+    [[ $c == crossover || -z $c ]] && continue
+    record_log "$c" "$m" "$current_seed" "$status" "$log"
+  done < "$old_csv"
+  rm -f -- "$old_csv"
+  failed=0
+else
+  printf "crossover,mutation,seed,returncode,log,mlp_class_error_pct,rbf_class_error_pct\n" > "$out"
+  exe=$(realpath -- "$exe"); train=$(realpath -- "$train"); test=$(realpath -- "$test")
+  failed=0
+  for c in "${cross_list[@]}"; do
+    for m in "${mut_list[@]}"; do
+      for ((run=0;run<runs;run++)); do
+        current_seed=$((10#$seed + run))
+        log="${base}_${c}_${m}_seed${current_seed}.log"
+        echo "$c / $m / seed $current_seed"
+        "$exe" "--fc_trainfile=$train" "--fc_testfile=$test" \
+          "--fc_dimension=$features" '--fc_iters=1' "--fc_seed=$current_seed" \
+          "--fc_generations=$generations" "--fc_print_every=$print_every" "--fc_chromosomes=$chromosomes" \
+          "--fc_length=$length" "--fc_model=$model" "--fc_local=$local" \
+          "--fc_crossover=$c" "--fc_mutation=$m" "--fc_operator_trials=$trials" \
+          2>&1 | tee "$log"
+        status=${PIPESTATUS[0]}
+        record_log "$c" "$m" "$current_seed" "$status" "$log"
+        if ((status != 0)); then echo "FAILED ($status): $log" >&2; failed=$((failed+1)); fi
+      done
     done
   done
-done
+fi
 # Group by crossover/mutation. Exclude failed runs and incomplete metrics.
 awk -F, -v OFS=, '
   NR == 1 { next }
