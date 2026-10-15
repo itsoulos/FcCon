@@ -62,7 +62,7 @@ if [[ -z $train || -z $test || ! -f $train || ! -f $test ]]; then
   exit 2
 fi
 if [[ ! -f $exe || ! -x $exe ]]; then echo "Executable not found/not executable: $exe" >&2; exit 2; fi
-allowed=(none standard two_point uniform targeted targetedWorst)
+allowed=(none standard two_point uniform targeted targetedWorst constants)
 mut_allowed=(none standard creep adaptive targeted targetedWorst)
 contains() { local needle=$1 x; shift; for x in "$@"; do [[ $needle == "$x" ]] && return 0; done; return 1; }
 if [[ $crossover != all ]] && ! contains "$crossover" "${allowed[@]}"; then echo "Invalid crossover: $crossover" >&2; exit 2; fi
@@ -81,8 +81,8 @@ summary="${base}_summary.csv"
 # Do not confuse these with progress output or the individual TEST ERROR lines.
 extract_errors() {
   awk '
-    /NEURAL AVERAGES/ { section="mlp"; next }
-    /RBF AVERAGES/    { section="rbf"; next }
+    /NEURAL AVERAGES/ { section="mlp" }
+    /RBF AVERAGES/    { section="rbf" }
     section != "" && /TEST:/ && /CLASS:/ {
       line=$0
       sub(/^.*CLASS:[[:space:]]*/, "", line)
