@@ -19,6 +19,8 @@ Usage: ./run_experiments.sh --dataset NAME [options]
   --model NAME            Model (default rbf)
   --local NAME            Local search (default none)
   --trials N              Operator trials (default 20)
+  --crossitems N          Distinct random crossItem chromosomes (default 0 = off)
+  --crossinterval N       Run crossItem every N generations (default 0 = off)
   --crossover NAME|all    none,standard,two_point,uniform,targeted,targetedWorst,constants
   --mutation NAME|all     none,standard,creep,adaptive,targeted,targetedWorst
   --seed N                Initial seed (default 1)
@@ -29,13 +31,13 @@ Usage: ./run_experiments.sh --dataset NAME [options]
 HELP
 }
 exe='./FcCon'; data_dir="$HOME/Desktop/ERGASIES/FeatureConstruction2/datasets/tenfolding"; dataset=''; train=''; test=''; features=2; runs=10; generations=500
-chromosomes=500; length=100; print_every=10; model='rbf'; local='none'; trials=20
+chromosomes=500; length=100; print_every=10; crossitems=0; crossinterval=0; model='rbf'; local='none'; trials=20
 crossover='standard'; mutation='standard'; seed=1; out='results/fccon_results.csv'; summarize_only=0
 while (($#)); do
   case "$1" in
     --help|-h) usage; exit 0 ;;
     --summarize-only) summarize_only=1; shift ;;
-    --exe|--data-dir|--dataset|--train|--test|--features|--runs|--generations|--print-every|--chromosomes|--length|--model|--local|--trials|--crossover|--mutation|--seed|--out)
+    --exe|--data-dir|--dataset|--train|--test|--features|--runs|--generations|--print-every|--chromosomes|--length|--model|--local|--trials|--crossitems|--crossinterval|--crossover|--mutation|--seed|--out)
       if (($# < 2)); then echo "Missing value for $1" >&2; exit 2; fi
       key=${1#--}; key=${key//-/_}; printf -v "$key" '%s' "$2"; shift 2 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
@@ -44,6 +46,10 @@ done
 for key in features runs generations print_every chromosomes length trials; do
   value=${!key}
   if [[ ! $value =~ ^[0-9]+$ ]] || ((10#$value < 1)); then echo "Invalid $key: $value" >&2; exit 2; fi
+done
+for key in crossitems crossinterval; do
+  value=${!key}
+  if [[ ! $value =~ ^[0-9]+$ ]]; then echo "Invalid $key: $value" >&2; exit 2; fi
 done
 if [[ ! $seed =~ ^[0-9]+$ ]]; then echo "Invalid seed: $seed" >&2; exit 2; fi
 # Resolve dataset names relative to the default (or overridden) directory.
@@ -134,6 +140,7 @@ else
           "--fc_generations=$generations" "--fc_print_every=$print_every" "--fc_chromosomes=$chromosomes" \
           "--fc_length=$length" "--fc_model=$model" "--fc_local=$local" \
           "--fc_crossover=$c" "--fc_mutation=$m" "--fc_operator_trials=$trials" \
+          "--fc_crossitems=$crossitems" "--fc_crossinterval=$crossinterval" \
           2>&1 | tee "$log"
         status=${PIPESTATUS[0]}
         record_log "$c" "$m" "$current_seed" "$status" "$log"

@@ -59,6 +59,8 @@ void makeMainParams()
     QStringList mutationList; mutationList<<"none"<<"standard"<<"creep"<<"adaptive"<<"targeted"<<"targetedWorst";
     mainParamList.addParam(Parameter("fc_mutation","standard",mutationList,"Mutation operator"));
     mainParamList.addParam(Parameter("fc_operator_trials",20,1,1000,"Fitness-guided operator trials"));
+    mainParamList.addParam(Parameter("fc_crossitems",0,0,1000,"Distinct random chromosomes for periodic crossItem (0 disables)"));
+    mainParamList.addParam(Parameter("fc_crossinterval",0,0,100000,"Generation interval for periodic crossItem (0 disables)"));
     QStringList localList;
     localList<<"none"<<"crossover"<<"mutate"<<"de"<<"siman"<<"gd"<<"adam";
     mainParamList.addParam(Parameter("fc_local",localList[0],localList,"Used local search method"));
@@ -386,6 +388,8 @@ void run()
         pop->setCrossMethod(mainParamList.getParam("fc_crossover").getValue().toStdString());
         pop->setMutationMethod(mainParamList.getParam("fc_mutation").getValue().toStdString());
         pop->setOperatorTrials(mainParamList.getParam("fc_operator_trials").getValue().toInt());
+        pop->setCrossItems(mainParamList.getParam("fc_crossitems").getValue().toInt());
+        pop->setCrossInterval(mainParamList.getParam("fc_crossinterval").getValue().toInt());
         p->getModel()->setPatternDimension(pattern_dimension);
         p->getModel()->setNumOfWeights(num_weights);
 

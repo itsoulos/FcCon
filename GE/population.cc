@@ -336,40 +336,25 @@ int	Population::getSize() const
 /* Evolve the next generation */
 void        Population::nextGeneration()
 {
-	calcFitnessArray();
-
-	select();
-        if((generation+1)%50==0)
-        {
-
-        for(int i=0;i<1;i++)
-            /*{
-                if(i==0)
-                localSearch(0);
-                else crossItem(rand()%genome_count);
-            }*/
-        localSearch(i==0?0:rand()%genome_count);
-	    select();
-        }
-
-        if((generation+1)%10==0)
-        {
-            for(int i=0;i<10;i++)
-                crossItem(i==0?0:rand() % genome_count);
-        }
+    calcFitnessArray();
     select();
     crossover();
     if(generation) mutate();
-    if(crossMethod=="targeted" || crossMethod=="targetedWorst" ||
-       mutationMethod=="targeted" || mutationMethod=="targetedWorst") {
-        calcFitnessArray();
-        select();
-        if(crossMethod=="targeted" || crossMethod=="targetedWorst")
-            targetedCrossItem(0,crossMethod=="targetedWorst");
-        if(mutationMethod=="targeted" || mutationMethod=="targetedWorst")
-            targetedMutateItem(0,mutationMethod=="targetedWorst");
-    }
     ++generation;
+    // Optional periodic crossItem: choose distinct random population positions.
+    // Disabled if either parameter is zero. Does not change local search.
+    if (crossItems > 0 && crossInterval > 0 && generation % crossInterval == 0)
+    {
+        const int count = crossItems < genome_count ? crossItems : genome_count;
+        vector<int> positions(genome_count);
+        for (int i=0; i<genome_count; ++i) positions[i]=i;
+        for (int i=0; i<count; ++i)
+        {
+            const int j = i + rand() % (genome_count-i);
+            std::swap(positions[i],positions[j]);
+            crossItem(positions[i]);
+        }
+    }
 }
 
 void    	Population::replaceWorst()

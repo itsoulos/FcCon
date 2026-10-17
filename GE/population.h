@@ -26,6 +26,7 @@ class Population
         string  localMethod="none";
         string crossMethod="standard", mutationMethod="standard";
         int operatorTrials=20;
+        int crossItems=0, crossInterval=0;
         void targetedCrossItem(int pos, bool worst);
         void targetedMutateItem(int pos, bool worst);
         void    	localSearch(int gpos);
@@ -37,6 +38,8 @@ class Population
         void setCrossMethod(string s) { crossMethod=s; }
         void setMutationMethod(string s) { mutationMethod=s; }
         void setOperatorTrials(int n) { operatorTrials=n; }
+        void setCrossItems(int n) { crossItems=n; }
+        void setCrossInterval(int n) { crossInterval=n; }
         int     getGeneration() const;
         int     getCount() const;
         int     getSize() const;
