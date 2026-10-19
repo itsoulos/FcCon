@@ -5,6 +5,9 @@
 # include <GRS/grs.h>
 # include <GE/nnprogram.h>
 # include <GE/integeranneal.h>
+# include <GE/rule.h>
+# include <GE/symbol.h>
+# include <functional>
 # define MAX_RULE	256
 
 mt19937 gen(random_device{}());
@@ -143,6 +146,32 @@ void	 Population::select()
 	}
 }
 
+// Find codons used by DIGIT0/DIGIT1 expansions, without wrapping.
+// This follows the deterministic grammar traversal used by Rule::printRule.
+static vector<int> constantCodons(Program *program, const vector<int> &g) {
+    vector<int> result;
+    if(g.empty() || !program || !program->getStartSymbol()) return result;
+    Symbol *start=program->getStartSymbol();
+    if(start->getCountRules()<=0) return result;
+    int pos=0;
+    std::function<void(Rule*,int)> visit = [&](Rule *r,int depth) {
+        if(!r || depth>1000 || pos >= (int)g.size()) return;
+        for(int i=0;i<r->getLength();++i) {
+            Symbol *sym=r->getSymbol(i);
+            if(!sym || sym->getTerminalStatus()) continue;
+            if(pos >= (int)g.size()) return; // no wrapping
+            int n=sym->getCountRules();
+            if(n<=0) return;
+            int idx=pos++;
+            if(sym->getName()=="DIGIT0" || sym->getName()=="DIGIT1")
+                result.push_back(idx);
+            visit(sym->getRule(g[idx]%n),depth+1);
+        }
+    };
+    visit(start->getRule(g[0]%start->getCountRules()),0);
+    return result;
+}
+
 /* Crossover operation: based on tournament selection */
 /* Select the tournament_size based on the genome count : */
 /*     (if genome_count > 100 ) tournament_size = 10   else   tournament_size = 4 */
@@ -200,6 +229,15 @@ void        Population::crossover()
                 children[count_children][k]=genome[parent[1]][k];
                 children[count_children+1][k]=genome[parent[0]][k];
             }
+        } else if(crossMethod=="constants") {
+            // Keep the first parent intact except for codons decoding as digits.
+            // Rebuild children from their respective parents before exchanging digits.
+            children[count_children]=genome[parent[0]];
+            children[count_children+1]=genome[parent[1]];
+            const auto p0=constantCodons(program,genome[parent[0]]);
+            const auto p1=constantCodons(program,genome[parent[1]]);
+            for(int k : p0) children[count_children][k]=genome[parent[1]][k];
+            for(int k : p1) children[count_children+1][k]=genome[parent[0]][k];
         } else if(crossMethod=="uniform") {
             for(int k=0;k<genome_size;k++) if(rand()%2) {
                 children[count_children][k]=genome[parent[1]][k];
@@ -227,7 +265,10 @@ void        Population::crossover()
 // Unlike QGenClass, FcCon has no per-class semantic error interface.
 void Population::targetedCrossItem(int pos, bool worst) {
     if(genome_size < 1 || genome_count < 2) return;
-    int donor = worst ? genome_count-1 : rand()%std::max(1,genome_count/5);
+    int donor=0;
+    printf("TARGETED[%d]=%lf ",pos,fitness_array[pos]);
+    if(worst) donor=(int)(std::min_element(fitness_array.begin(),fitness_array.end())-fitness_array.begin());
+    else donor=(int)(std::max_element(fitness_array.begin(),fitness_array.end())-fitness_array.begin());
     if(donor==pos) donor=(donor+1)%genome_count;
     vector<int> best=genome[pos];
     double score=fitness(best);
@@ -237,10 +278,12 @@ void Population::targetedCrossItem(int pos, bool worst) {
         int len=1+rand()%std::max(1,std::min(genome_size-a,genome_size/5));
         std::copy(genome[donor].begin()+a,genome[donor].begin()+a+len,trial.begin()+a);
         double f=fitness(trial);
-        if(std::isfinite(f) && f>score) {best=std::move(trial);score=f;}
+        if(fabs(f)<1e+8&&std::isfinite(f) && fabs(f)<fabs(score)) {best=std::move(trial);score=f;}
     }
+
     genome[pos]=std::move(best);
     fitness_array[pos]=score;
+    printf(" %lf \n",score);
 }
 
 void Population::targetedMutateItem(int pos, bool worst) {
@@ -255,7 +298,7 @@ void Population::targetedMutateItem(int pos, bool worst) {
             for(int k=0;k<width;k++) trial[(j+k)%genome_size]=rand()%MAX_RULE;
         } else trial[j]=rand()%MAX_RULE;
         double f=fitness(trial);
-        if(std::isfinite(f) && f>score) {best=std::move(trial);score=f;}
+        if(std::isfinite(f) && fabs(f)<fabs(score)) {best=std::move(trial);score=f;}
     }
     genome[pos]=std::move(best);
     fitness_array[pos]=score;
@@ -352,9 +395,16 @@ void        Population::nextGeneration()
         {
             const int j = i + rand() % (genome_count-i);
             std::swap(positions[i],positions[j]);
-            crossItem(positions[i]);
+            crossItem(i==0?0:positions[i]);
         }
+	select();
     }
+	if((generation+1)%20==0)
+	{
+		for(int i=0;i<2;i++)
+		localSearch(i==0?0:rand()%genome_count);
+		select();
+	}
 }
 
 void    	Population::replaceWorst()
@@ -610,53 +660,67 @@ void    Population::setLocalMethod(string s)
 
 void        Population::crossItem(int pos)
 {
-	vector<int> g;
-	g.resize(genome_size);
-	for(int i=0;i<genome_size;i++) g[i]=genome[pos][i];
-    printf("CROSS[%d]=",pos);
-	fflush(stdout);
-	for(int iters=1;iters<=100;iters++)
-	{
-            int gpos,cutpoint;
-        again:
-            gpos=rand() % genome_count;
-           /* for(int j=0;j<genome_size;j++)
-            {
-                g[j]=rand()%2==1?genome[pos][j]:genome[gpos][j];
-            }*/
+    if (pos < 0 || pos >= genome_count || genome_size < 1 || genome_count < 2)
+        return;
+    if (crossMethod == "none")
+        return;
 
-            cutpoint=rand() % genome_size;
-        for(int j=0;j<cutpoint;j++) g[j]=genome[pos][j];
-        for(int j=cutpoint;j<genome_size;j++) g[j]=genome[gpos][j];
-        double f=fitness(g);
-        if(fabs(f)>1e+10) goto again;
-		if(fabs(f)<fabs(fitness_array[pos]))
-		{
-            printf("%lf ",f);
-            fflush(stdout);
-			for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
-			fitness_array[pos]=f;
-		}
-		else
-		{
-            /*for(int j=0;j<genome_size;j++)
-            {
-                g[j]=rand()%2==1?genome[gpos][j]:genome[pos][j];
-            }*/
-            cutpoint=rand() % genome_size;
-            for(int j=0;j<cutpoint;j++) g[j]=genome[gpos][j];
-            for(int j=cutpoint;j<genome_size;j++) g[j]=genome[pos][j];
-			double f=fitness(g);
-			if(fabs(f)<fabs(fitness_array[pos]))
-			{
-            printf("%lf ",f);
-            fflush(stdout);
-				for(int j=0;j<genome_size;j++) genome[pos][j]=g[j];
-				fitness_array[pos]=f;
-			}
-		}
-	}
-        printf("\n");
+    // These methods are selected HERE, not as extra operations
+    // on every offspring in nextGeneration().
+    if (crossMethod == "targeted" || crossMethod == "targetedWorst") {
+        targetedCrossItem(pos, crossMethod == "targetedWorst");
+        return;
+    }
+
+    printf("CROSS[%d] (%s) = ", pos, crossMethod.c_str());
+    fflush(stdout);
+
+    vector<int> trial(genome_size);
+    const int attempts = 100; // preserve original crossItem trial count
+    for (int iter = 0; iter < attempts; ++iter) {
+        const int donor = rand() % genome_count;
+        if (donor == pos) continue;
+
+        const vector<int> source = genome[pos];
+        const vector<int> other = genome[donor];
+
+        for (int orientation = 0; orientation < 2; ++orientation) {
+            const vector<int> &a = orientation == 0 ? source : other;
+            const vector<int> &b = orientation == 0 ? other : source;
+            trial = a;
+
+            if (crossMethod == "standard") {
+                const int cut = rand() % genome_size;
+                for (int j = cut; j < genome_size; ++j) trial[j] = b[j];
+            } else if (crossMethod == "two_point") {
+                int left = rand() % genome_size;
+                int right = rand() % genome_size;
+                if (left > right) std::swap(left, right);
+                for (int j = left; j <= right; ++j) trial[j] = b[j];
+            } else if (crossMethod == "uniform") {
+                for (int j = 0; j < genome_size; ++j)
+                    if (rand() % 2) trial[j] = b[j];
+            } else if (crossMethod == "constants") {
+                const vector<int> positions = constantCodons(program, a);
+                if (positions.empty()) break;
+                for (int j : positions)
+                    if (j >= 0 && j < genome_size) trial[j] = b[j];
+            } else {
+                return; // unknown crossover method
+            }
+
+            const double f = fitness(trial);
+            if (std::isfinite(f) && fabs(f) < 1e+10 &&
+                fabs(f) < fabs(fitness_array[pos])) {
+                genome[pos] = trial;
+                fitness_array[pos] = f;
+                printf("%lf ", f);
+                fflush(stdout);
+                break;
+            }
+        }
+    }
+    printf("\n");
 }
 
 void    	Population::mutateItem(int pos)

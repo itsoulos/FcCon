@@ -54,7 +54,7 @@ void makeMainParams()
     QStringList modelList;
     modelList<<"rbf"<<"neural"<<"airbf"<<"knn"<<"frbf"<<"mrbf";
     mainParamList.addParam(Parameter("fc_model",modelList[0],modelList,"Used model for feature construction"));
-    QStringList crossList; crossList<<"none"<<"standard"<<"two_point"<<"uniform"<<"targeted"<<"targetedWorst";
+    QStringList crossList; crossList<<"none"<<"standard"<<"two_point"<<"uniform"<<"targeted"<<"targetedWorst"<<"constants";
     mainParamList.addParam(Parameter("fc_crossover","standard",crossList,"Global crossover operator"));
     QStringList mutationList; mutationList<<"none"<<"standard"<<"creep"<<"adaptive"<<"targeted"<<"targetedWorst";
     mainParamList.addParam(Parameter("fc_mutation","standard",mutationList,"Mutation operator"));
