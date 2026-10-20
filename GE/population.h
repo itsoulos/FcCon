@@ -55,6 +55,7 @@ class Population
         vector<int> discreteGradient( vector<int>& x);
         vector<int> discreteStep(vector<int>& x,vector<int>& grad);
         void integerLocalSearch(vector<int> &x,int maxSteps = 20);
+        vector<int> discreteAdam(vector<int> x, int steps = 20);
         vector<int> integerAdam(
             vector<int> x,
             int steps = 20,
@@ -73,6 +74,7 @@ class Population
             );
 	void crossItem(int pos);
 	void mutateItem(int pos);
+        void mutateItemVariant(int pos, const string &method);
 		~Population();
 		
 };

@@ -54,7 +54,7 @@ void makeMainParams()
     QStringList modelList;
     modelList<<"rbf"<<"neural"<<"airbf"<<"knn"<<"frbf"<<"mrbf";
     mainParamList.addParam(Parameter("fc_model",modelList[0],modelList,"Used model for feature construction"));
-    QStringList crossList; crossList<<"none"<<"standard"<<"two_point"<<"uniform"<<"targeted"<<"targetedWorst"<<"constants";
+    QStringList crossList; crossList<<"none"<<"standard"<<"two_point"<<"uniform"<<"targeted"<<"targetedWorst";
     mainParamList.addParam(Parameter("fc_crossover","standard",crossList,"Global crossover operator"));
     QStringList mutationList; mutationList<<"none"<<"standard"<<"creep"<<"adaptive"<<"targeted"<<"targetedWorst";
     mainParamList.addParam(Parameter("fc_mutation","standard",mutationList,"Mutation operator"));
@@ -62,7 +62,7 @@ void makeMainParams()
     mainParamList.addParam(Parameter("fc_crossitems",0,0,1000,"Distinct random chromosomes for periodic crossItem (0 disables)"));
     mainParamList.addParam(Parameter("fc_crossinterval",0,0,100000,"Generation interval for periodic crossItem (0 disables)"));
     QStringList localList;
-    localList<<"none"<<"crossover"<<"mutate"<<"de"<<"siman"<<"gd"<<"adam";
+    localList<<"none"<<"crossover"<<"mutate"<<"de"<<"siman"<<"gd"<<"adam"<<"discrete_adam"<<"mutate_best"<<"mutate_adaptive"<<"mutate_active";
     mainParamList.addParam(Parameter("fc_local",localList[0],localList,"Used local search method"));
     QStringList yesno;
     yesno<<"no"<<"yes";

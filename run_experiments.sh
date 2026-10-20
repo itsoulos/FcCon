@@ -17,10 +17,10 @@ Usage: ./run_experiments.sh --dataset NAME [options]
   --chromosomes N         Population size (default 500)
   --length N              Chromosome length (default 100)
   --model NAME            Model (default rbf)
-  --local NAME            Local search (default none)
+  --local NAME            Local search (none, adam, discrete_adam, etc.; default none)
   --trials N              Operator trials (default 20)
-  --crossitems N          Distinct random crossItem chromosomes (default 0 = off)
-  --crossinterval N       Run crossItem every N generations (default 0 = off)
+  --crossitems N          Random chromosomes for periodic crossItem (default 0)
+  --crossinterval N       Apply crossItem every N generations (default 0)
   --crossover NAME|all    none,standard,two_point,uniform,targeted,targetedWorst,constants
   --mutation NAME|all     none,standard,creep,adaptive,targeted,targetedWorst
   --seed N                Initial seed (default 1)
@@ -31,8 +31,8 @@ Usage: ./run_experiments.sh --dataset NAME [options]
 HELP
 }
 exe='./FcCon'; data_dir="$HOME/Desktop/ERGASIES/FeatureConstruction2/datasets/tenfolding"; dataset=''; train=''; test=''; features=2; runs=10; generations=500
-chromosomes=500; length=100; print_every=10; crossitems=0; crossinterval=0; model='rbf'; local='none'; trials=20
-crossover='standard'; mutation='standard'; seed=1; out='results/fccon_results.csv'; summarize_only=0
+chromosomes=500; length=100; print_every=10; model='rbf'; local='none'; trials=20
+crossitems=0; crossinterval=0; crossover='standard'; mutation='standard'; seed=1; out='results/fccon_results.csv'; summarize_only=0
 while (($#)); do
   case "$1" in
     --help|-h) usage; exit 0 ;;

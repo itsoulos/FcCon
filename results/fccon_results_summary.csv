@@ -1,0 +1,2 @@
+crossover,mutation,valid_runs,mlp_mean_pct,mlp_std_pct,rbf_mean_pct,rbf_std_pct
+standard,standard,1,46.170000,0.000000,66.679000,0.000000

@@ -8,6 +8,10 @@
 # include <GE/rule.h>
 # include <GE/symbol.h>
 # include <functional>
+# include <algorithm>
+# include <limits>
+# include <utility>
+# include <cmath>
 # define MAX_RULE	256
 
 mt19937 gen(random_device{}());
@@ -266,7 +270,6 @@ void        Population::crossover()
 void Population::targetedCrossItem(int pos, bool worst) {
     if(genome_size < 1 || genome_count < 2) return;
     int donor=0;
-    printf("TARGETED[%d]=%lf ",pos,fitness_array[pos]);
     if(worst) donor=(int)(std::min_element(fitness_array.begin(),fitness_array.end())-fitness_array.begin());
     else donor=(int)(std::max_element(fitness_array.begin(),fitness_array.end())-fitness_array.begin());
     if(donor==pos) donor=(donor+1)%genome_count;
@@ -278,12 +281,10 @@ void Population::targetedCrossItem(int pos, bool worst) {
         int len=1+rand()%std::max(1,std::min(genome_size-a,genome_size/5));
         std::copy(genome[donor].begin()+a,genome[donor].begin()+a+len,trial.begin()+a);
         double f=fitness(trial);
-        if(fabs(f)<1e+8&&std::isfinite(f) && fabs(f)<fabs(score)) {best=std::move(trial);score=f;}
+        if(std::isfinite(f) && fabs(f)<fabs(score)) {best=std::move(trial);score=f;}
     }
-
     genome[pos]=std::move(best);
     fitness_array[pos]=score;
-    printf(" %lf \n",score);
 }
 
 void Population::targetedMutateItem(int pos, bool worst) {
@@ -399,12 +400,12 @@ void        Population::nextGeneration()
         }
 	select();
     }
-	if((generation+1)%20==0)
-	{
-		for(int i=0;i<2;i++)
-		localSearch(i==0?0:rand()%genome_count);
-		select();
-	}
+    if(generation%50==0)
+    {
+	    for(int i=0;i<5;i++)
+		    localSearch(i==0?0:rand()%genome_count);
+	    select();
+    }
 }
 
 void    	Population::replaceWorst()
@@ -653,6 +654,96 @@ printf("ADAM[%d] TRY: %20.10lf\n",t,bestVal);
     return x;
 }
 
+// Adam-inspired local search for integer GE codons.
+// Finite differences estimate beneficial integer directions, while
+// Adam moments prioritize stable directions. Only a few codons change
+// per accepted move, preserving most of the grammatical structure.
+vector<int> Population::discreteAdam(vector<int> x, int steps)
+{
+    const int n = static_cast<int>(x.size());
+    if (n == 0 || steps <= 0) return x;
+
+    const double beta1 = 0.9, beta2 = 0.999, eps = 1e-8;
+    vector<double> first(n, 0.0), second(n, 0.0);
+    double best = fitness(x);
+    if (!std::isfinite(best)) return x;
+
+    const int maxCoordinates = std::min(n, 16);
+    const int maxChanges = std::min(n, 3);
+    for (int t = 1; t <= steps; ++t) {
+        vector<int> coords(n);
+        for (int i = 0; i < n; ++i) coords[i] = i;
+        // Partial Fisher-Yates shuffle; avoid evaluating all codons.
+        for (int i = 0; i < maxCoordinates; ++i) {
+            const int j = i + rand() % (n - i);
+            std::swap(coords[i], coords[j]);
+        }
+
+        vector<double> gradient(n, 0.0);
+        for (int k = 0; k < maxCoordinates; ++k) {
+            const int i = coords[k];
+            vector<int> candidate = x;
+            double plusScore = std::numeric_limits<double>::infinity();
+            if (x[i] < std::numeric_limits<int>::max()) {
+                candidate[i] = x[i] + 1;
+                const double fp = fitness(candidate);
+                if (std::isfinite(fp) && fabs(fp) < fabs(best)) {
+                    gradient[i] = 1.0;
+                    plusScore = fabs(fp);
+                }
+            }
+            if (x[i] > 0) {
+                candidate[i] = x[i] - 1;
+                const double fm = fitness(candidate);
+                if (std::isfinite(fm) && fabs(fm) < fabs(best) &&
+                    (gradient[i] == 0.0 || fabs(fm) < plusScore)) {
+                    gradient[i] = -1.0;
+                }
+            }
+        }
+
+        vector<std::pair<double, int>> ranked;
+        for (int i = 0; i < n; ++i) {
+            first[i] = beta1 * first[i] + (1.0 - beta1) * gradient[i];
+            second[i] = beta2 * second[i] + (1.0 - beta2) * gradient[i] * gradient[i];
+            if (gradient[i] == 0.0) continue;
+            const double mhat = first[i] / (1.0 - pow(beta1, t));
+            const double vhat = second[i] / (1.0 - pow(beta2, t));
+            const double priority = mhat / (sqrt(vhat) + eps);
+            if (priority * gradient[i] > 0.0)
+                ranked.push_back(std::make_pair(fabs(priority), i));
+        }
+        std::sort(ranked.begin(), ranked.end(),
+                  [](const std::pair<double,int>& a, const std::pair<double,int>& b) {
+                      return a.first > b.first;
+                  });
+
+        bool improved = false;
+        const int count = std::min(maxChanges, static_cast<int>(ranked.size()));
+        // Try single-codon changes first to minimize disruption.
+        for (int k = 0; k < count; ++k) {
+            const int i = ranked[k].second;
+            const int direction = gradient[i] > 0 ? 1 : -1;
+            for (int step : {1, 2, 4}) {
+                const long long next = static_cast<long long>(x[i]) + direction * step;
+                if (next < 0 || next > std::numeric_limits<int>::max()) continue;
+                vector<int> candidate = x;
+                candidate[i] = static_cast<int>(next);
+                const double f = fitness(candidate);
+                if (std::isfinite(f) && fabs(f) < fabs(best)) {
+                    x.swap(candidate);
+                    best = f;
+                    improved = true;
+                    break;
+                }
+            }
+            if (improved) break;
+        }
+        if (!improved && ranked.empty()) break;
+    }
+    return x;
+}
+
 void    Population::setLocalMethod(string s)
 {
     localMethod = s;
@@ -723,6 +814,95 @@ void        Population::crossItem(int pos)
     printf("\n");
 }
 
+// The consumed GE codons (no wrapping), including the initial start rule.
+// If the grammar traversal cannot identify any, use all codons as fallback.
+static vector<int> activeCodons(Program *program, const vector<int> &g) {
+    vector<int> positions;
+    if(g.empty() || !program || !program->getStartSymbol()) return positions;
+    Symbol *start=program->getStartSymbol();
+    if(start->getCountRules()<=0) return positions;
+    positions.push_back(0);
+    int cursor=1;
+    std::function<void(Rule*,int)> visit = [&](Rule *r,int depth) {
+        if(!r || depth>1000 || cursor >= (int)g.size()) return;
+        for(int i=0;i<r->getLength();++i) {
+            Symbol *sym=r->getSymbol(i);
+            if(!sym || sym->getTerminalStatus()) continue;
+            int n=sym->getCountRules();
+            if(n<=0 || cursor >= (int)g.size()) return;
+            const int idx=cursor++;
+            positions.push_back(idx);
+            visit(sym->getRule(g[idx]%n),depth+1);
+        }
+    };
+    visit(start->getRule(g[0]%start->getCountRules()),0);
+    return positions;
+}
+
+// Fitness is maximized in the original mutateItem implementation.
+// Use a fixed evaluation budget for a meaningful comparison of methods.
+void Population::mutateItemVariant(int pos, const string &method) {
+    if(pos<0 || pos>=genome_count || genome_size<=0) return;
+    vector<int> best=genome[pos];
+    double bestFitness=fitness_array[pos];
+    if(!std::isfinite(bestFitness)) return;
+    const int budget=1000;
+    const int k=10;
+    int evaluations=0, improvements=0, stagnation=0;
+    int adaptiveRadius=4;
+    printf("LOCAL_%s[%d] = ",method.c_str(),pos);
+    fflush(stdout);
+    while(evaluations < budget && stagnation < 5*genome_size) {
+        vector<int> candidates;
+        if(method=="mutate_active") candidates=activeCodons(program,best);
+        if(candidates.empty()) {
+            candidates.resize(genome_size);
+            for(int j=0;j<genome_size;++j) candidates[j]=j;
+        }
+        int i=candidates[rand()%candidates.size()];
+        const int original=best[i];
+        int winningCodon=original;
+        double winningFitness=bestFitness;
+        const int attempts=std::min(k,budget-evaluations);
+        for(int t=0;t<attempts;++t) {
+            int value=original;
+            if(method=="mutate_adaptive") {
+                int step=1+rand()%adaptiveRadius;
+                value=(original+((rand()%2)?step:-step)+MAX_RULE)%MAX_RULE;
+                if(t==attempts-1) value=rand()%MAX_RULE;
+            } else if(method=="mutate_active") {
+                // Prefer local steps, but occasionally resample the codon.
+                if(t%4==0) value=rand()%MAX_RULE;
+                else value=(original+((rand()%2)?1:-1)*(1+rand()%8)+MAX_RULE)%MAX_RULE;
+            } else { // mutate_best: best of K uniform replacements
+                value=rand()%MAX_RULE;
+            }
+            if(value==original) continue;
+            vector<int> trial=best;
+            trial[i]=value;
+            double f=fitness(trial);
+            ++evaluations;
+            if(std::isfinite(f) && f>winningFitness) {
+                winningFitness=f;
+                winningCodon=value;
+            }
+        }
+        if(winningCodon!=original) {
+            best[i]=winningCodon;
+            bestFitness=winningFitness;
+            ++improvements;
+            stagnation=0;
+            if(method=="mutate_adaptive") adaptiveRadius=std::min(128,adaptiveRadius*2);
+        } else {
+            ++stagnation;
+            if(method=="mutate_adaptive") adaptiveRadius=std::max(1,adaptiveRadius/2);
+        }
+    }
+    genome[pos]=best;
+    fitness_array[pos]=bestFitness;
+    printf("%lf (evaluations=%d improvements=%d)\n",bestFitness,evaluations,improvements);
+}
+
 void    	Population::mutateItem(int pos)
 {
 	vector<int> g;
@@ -773,6 +953,11 @@ void        Population::localSearch(int pos)
 	    mutateItem(pos);
     }
     else
+    if(localMethod == "mutate_best" || localMethod == "mutate_adaptive" || localMethod == "mutate_active")
+    {
+        mutateItemVariant(pos,localMethod);
+    }
+    else
     if(localMethod == "siman")
     {
             double f = fitness_array[pos];
@@ -817,7 +1002,7 @@ void        Population::localSearch(int pos)
              double trial_fitness=fitness(g);
              if(fabs(trial_fitness)<fabs(fitness_array[pos]))
              {
-                //printf("DE. NEW VALUE[%d] = %lf=>%lf\n",pos,fitness_array[pos],trial_fitness);
+                printf("DE. NEW VALUE[%d] = %lf=>%lf\n",pos,fitness_array[pos],trial_fitness);
                 fitness_array[pos]=trial_fitness;
              }
              else	genome[pos][i]=old_value;
@@ -834,6 +1019,16 @@ void        Population::localSearch(int pos)
             printf("GD. NEW VALUE[%d] = %lf=>%lf\n",pos,fitness_array[pos],ff);
             fitness_array[pos]=ff;
             for(int j=0;j<g.size();j++) genome[pos][j]=g[j];
+        }
+    }
+    else if (localMethod == "discrete_adam")
+    {
+        g = discreteAdam(g);
+        const double ff = fitness(g);
+        if (std::isfinite(ff) && fabs(ff) < fabs(fitness_array[pos])) {
+            printf("DISCRETE_ADAM. NEW VALUE[%d] = %lf=>%lf\n", pos, fitness_array[pos], ff);
+            fitness_array[pos] = ff;
+            genome[pos] = g;
         }
     }
     else
