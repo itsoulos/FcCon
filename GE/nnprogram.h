@@ -29,8 +29,15 @@ class NNprogram	:public Program
 		Cprogram *program;
 		Model	 *model;
 		Mapper	 *mapper;
+		Dataset *ruleTrainSet;
+		double ruleWeight;
+        bool neuralRulesMode;
+        double neuralRulesTolerance;
+		double ruleError();
 	public:
         NNprogram(int type,int pdimension,Dataset *train,Dataset *test);
+        void setRuleWeight(double w);
+        void setNeuralRules(double tolerance);
 		string	printF(vector<int> &genome);
 		virtual double 	fitness(vector<int> &genome);
 		Model	*getModel();

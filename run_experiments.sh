@@ -17,6 +17,9 @@ Usage: ./run_experiments.sh --dataset NAME [options]
   --chromosomes N         Population size (default 500)
   --length N              Chromosome length (default 100)
   --model NAME            Model (default rbf)
+  --fitness neural|hybrid|neural_rules Fitness mode (default neural)
+  --rule-weight FLOAT      Hybrid rule weight (default 0.25)
+  --rules-tolerance FLOAT  Neural error bucket width (default 0.01)
   --local NAME            Local search (none, adam, discrete_adam, etc.; default none)
   --trials N              Operator trials (default 20)
   --crossitems N          Random chromosomes for periodic crossItem (default 0)
@@ -31,13 +34,13 @@ Usage: ./run_experiments.sh --dataset NAME [options]
 HELP
 }
 exe='./FcCon'; data_dir="$HOME/Desktop/ERGASIES/FeatureConstruction2/datasets/tenfolding"; dataset=''; train=''; test=''; features=2; runs=10; generations=500
-chromosomes=500; length=100; print_every=10; model='rbf'; local='none'; trials=20
+chromosomes=500; length=100; print_every=10; model='rbf'; local='none'; fitness='neural'; rule_weight=0.25; rules_tolerance=0.01; trials=20
 crossitems=0; crossinterval=0; crossover='standard'; mutation='standard'; seed=1; out='results/fccon_results.csv'; summarize_only=0
 while (($#)); do
   case "$1" in
     --help|-h) usage; exit 0 ;;
     --summarize-only) summarize_only=1; shift ;;
-    --exe|--data-dir|--dataset|--train|--test|--features|--runs|--generations|--print-every|--chromosomes|--length|--model|--local|--trials|--crossitems|--crossinterval|--crossover|--mutation|--seed|--out)
+    --exe|--data-dir|--dataset|--train|--test|--features|--runs|--generations|--print-every|--chromosomes|--length|--model|--local|--fitness|--rule-weight|--rules-tolerance|--trials|--crossitems|--crossinterval|--crossover|--mutation|--seed|--out)
       if (($# < 2)); then echo "Missing value for $1" >&2; exit 2; fi
       key=${1#--}; key=${key//-/_}; printf -v "$key" '%s' "$2"; shift 2 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
@@ -138,7 +141,7 @@ else
         "$exe" "--fc_trainfile=$train" "--fc_testfile=$test" \
           "--fc_dimension=$features" '--fc_iters=1' "--fc_seed=$current_seed" \
           "--fc_generations=$generations" "--fc_print_every=$print_every" "--fc_chromosomes=$chromosomes" \
-          "--fc_length=$length" "--fc_model=$model" "--fc_local=$local" \
+          "--fc_length=$length" "--fc_model=$model" "--fc_local=$local" "--fc_fitness=$fitness" "--fc_rule_weight=$rule_weight" "--fc_rules_tolerance=$rules_tolerance" \
           "--fc_crossover=$c" "--fc_mutation=$m" "--fc_operator_trials=$trials" \
           "--fc_crossitems=$crossitems" "--fc_crossinterval=$crossinterval" \
           2>&1 | tee "$log"

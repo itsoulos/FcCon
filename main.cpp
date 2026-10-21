@@ -54,6 +54,10 @@ void makeMainParams()
     QStringList modelList;
     modelList<<"rbf"<<"neural"<<"airbf"<<"knn"<<"frbf"<<"mrbf";
     mainParamList.addParam(Parameter("fc_model",modelList[0],modelList,"Used model for feature construction"));
+    QStringList fitnessModes; fitnessModes<<"neural"<<"hybrid"<<"neural_rules";
+    mainParamList.addParam(Parameter("fc_fitness","neural",fitnessModes,"Fitness mode (default neural)"));
+    mainParamList.addParam(Parameter("fc_rule_weight",0.25,0.0,1.0,"Hybrid rule error weight"));
+    mainParamList.addParam(Parameter("fc_rules_tolerance",0.01,0.000001,100.0,"Neural error bucket width for neural_rules"));
     QStringList crossList; crossList<<"none"<<"standard"<<"two_point"<<"uniform"<<"targeted"<<"targetedWorst";
     mainParamList.addParam(Parameter("fc_crossover","standard",crossList,"Global crossover operator"));
     QStringList mutationList; mutationList<<"none"<<"standard"<<"creep"<<"adaptive"<<"targeted"<<"targetedWorst";
@@ -383,6 +387,10 @@ void run()
         strcpy(train_file,selectedTrainFile.toStdString().c_str());
 
         p=new NNprogram(model_type,pattern_dimension,trainSet,testSet);
+        if(mainParamList.getParam("fc_fitness").getValue()=="hybrid")
+            p->setRuleWeight(mainParamList.getParam("fc_rule_weight").getValue().toDouble());
+        else if(mainParamList.getParam("fc_fitness").getValue()=="neural_rules")
+            p->setNeuralRules(mainParamList.getParam("fc_rules_tolerance").getValue().toDouble());
         pop=new Population(pcount,length,p);
         pop->setLocalMethod(mainParamList.getParam("fc_local").getValue().toStdString());
         pop->setCrossMethod(mainParamList.getParam("fc_crossover").getValue().toStdString());

@@ -400,7 +400,7 @@ void        Population::nextGeneration()
         }
 	select();
     }
-    if(generation%50==0)
+    if(generation%20==0)
     {
 	    for(int i=0;i<5;i++)
 		    localSearch(i==0?0:rand()%genome_count);
